@@ -1,12 +1,23 @@
 {
-  "name": "app",
-  "version": "1.0.50",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "bun run --watch src/index.ts"
+    "dev": "bun run --watch src/server.ts",
+    "lint": "bunx oxlint --fix",
+    "format": "bunx prettier --write ."
   },
   "dependencies": {
-    "elysia": "latest"
+    "@elysiajs/bearer": "^1.2.0",
+    "@elysiajs/cors": "^1.2.0",
+    "@elysiajs/eden": "^1.2.0",
+    "@elysiajs/html": "^1.2.0",
+    "@elysiajs/server-timing": "^1.2.1",
+    "@elysiajs/swagger": "^1.2.2",
+    "@google/generative-ai": "^0.24.0",
+    "@kitajs/ts-html-plugin": "^4.1.1",
+    "consola": "^3.4.2",
+    "elysia": "latest",
+    "elysia-requestid": "1.0.9",
+    "pretty-ms": "^9.2.0"
   },
   "devDependencies": {
     "bun-types": "latest"

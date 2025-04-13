@@ -1,15 +1,13 @@
-# Elysia with Bun runtime
+# Bun-Gemini-Proxy
 
-## Getting Started
-To get started with this template, simply paste this command into your terminal:
 ```bash
-bun create elysia ./elysia-example
+curl "http://localhost:7860/v1beta/models/gemini-1.5-flash:streamGenerateContent?alt=sse" \
+        -H 'Content-Type: application/json' \
+        -H 'x-goog-api-key: hhh' \
+        -d '{ "contents":[{"parts":[{"text": "Write long a story about a magic backpack."}]}]}'
 ```
 
-## Development
-To start the development server run:
-```bash
-bun run dev
-```
+## 资料
 
-Open http://localhost:3000/ with your browser to see the result.
+- https://ai.google.dev/gemini-api/docs/get-started/tutorial?lang=rest&hl=zh-cn
+- https://github.com/google-gemini/generative-ai-js
