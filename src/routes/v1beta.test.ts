@@ -1,8 +1,9 @@
 import { treaty } from '@elysiajs/eden';
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import { describe, it as ittt, spyOn } from 'bun:test';
+import { describe, it as ittt, setDefaultTimeout, spyOn } from 'bun:test';
 import Elysia from 'elysia';
 import { v1betaRoutes } from './v1beta';
+setDefaultTimeout(10 * 60 * 60 * 1000);
 
 let q = '';
 q = '‘莎士比亚’是几个字？';
@@ -72,12 +73,13 @@ describe('v1beta 仅本地调试', async () => {
   });
 
   it('@google/generative-ai', async () => {
-    const genAI = new GoogleGenerativeAI(Bun.env.GEMINI_API_KEYS.slice(0, 39));
+    const t1 = performance.now();
+    const genAI = new GoogleGenerativeAI(Bun.env.AUTH_KEY);
     const model = genAI.getGenerativeModel(
       { model: 'gemini-1.5-flash' },
-      // {
-      //   baseUrl: 'http://localhost:7860',
-      // },
+      {
+        baseUrl: 'https://oo1dev-bun-gemini-proxy.hf.space',
+      },
     );
     try {
       const result = await model.generateContentStream(q);
@@ -91,5 +93,6 @@ describe('v1beta 仅本地调试', async () => {
         console.error(`Unknown error: ${error}`);
       }
     }
+    console.debug(`耗时: ${performance.now() - t1}ms`);
   });
 });

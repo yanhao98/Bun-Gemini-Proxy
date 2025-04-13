@@ -25,23 +25,45 @@ export const v1betaRoutes = new Elysia({ prefix: '/v1beta' })
 
       perfLog(ctx, `[请求转发] 转发至Gemini API: ${apiURL}`);
       try {
+        // 创建一个AbortController用于取消上游请求
+        const controller = new AbortController();
+        const signal = controller.signal;
+        
+        // 组合多个信号源：请求超时和手动取消
+        const timeoutSignal = AbortSignal.timeout(30 * 1000); // 30秒超时
+        
+        // 监听客户端请求取消
+        ctx.request.signal.addEventListener('abort', () => {
+          perfLog(ctx, `[请求取消] 客户端取消了请求，正在取消上游请求...`);
+          controller.abort(); // 取消上游请求
+        }, { once: true });
+
+        // 监听超时信号
+        timeoutSignal.addEventListener('abort', () => {
+          perfLog(ctx, `[请求超时] 请求超过了30秒时限，正在取消上游请求...`);
+          controller.abort('请求超时'); // 带有原因的取消
+        }, { once: true });
+
         const response = await fetch(apiURL, {
           method: 'POST',
           headers: { [GEMINI_API_HEADER_NAME]: xGoogApiKey },
           body: ctx.request.body,
-          signal: AbortSignal.timeout(30 * 1000), // 超时
+          signal, // 使用我们的AbortController的信号
         });
+        
         perfLog(ctx, `[响应接收] Gemini API返回状态码: ${response.status}`);
 
         ctx.set.status = response.status;
 
-        // XXX: 处理错误响应？
-        // if (response.status === 400)
-        //   return makeGeminiErrorJson(400, { ... });
-
         if (!response.ok) return await response.clone().json();
 
         for await (const value of response.body!.values()) {
+          // 在每次yield之前检查客户端是否已取消请求
+          if (ctx.request.signal.aborted) {
+            perfLog(ctx, `[数据流中断] 客户端已取消请求，停止数据传输`);
+            break; // 停止迭代
+          }
+          
           perfLog(
             ctx,
             `[数据流传输] 接收数据分片，长度: ${value?.length} 字节`,
@@ -51,12 +73,20 @@ export const v1betaRoutes = new Elysia({ prefix: '/v1beta' })
         perfLog(ctx, `[数据流传输] 数据流传输完成`);
       } catch (error: unknown) {
         const typedError = error as Error;
+        
+        // 检查是否是因为客户端取消而导致的错误
+        if (ctx.request.signal.aborted) {
+          perfLog(ctx, `[请求取消] 因客户端取消请求而终止上游调用`);
+          return; // 客户端已断开连接，无需返回错误
+        }
+        
         perfLog(ctx, `[请求异常] Gemini API调用失败: ${typedError.message}`);
         console.debug(error);
-        ctx.set.status = typedError.name === 'TimeoutError' ? 504 : 500;
+        
+        ctx.set.status = typedError.name === 'TimeoutError' || typedError.name === 'AbortError' ? 504 : 500;
         return createGeminiError(
           ctx.set.status as number,
-          typedError.name === 'TimeoutError'
+          typedError.name === 'TimeoutError' || typedError.name === 'AbortError'
             ? `请求超时`
             : `请求失败: ${typedError.message}`,
         );
