@@ -52,7 +52,7 @@ describe('auth-plugin', () => {
     expect(responseBody.error.message).toContain('提供的API密钥无效');
   });
 
-  it('提供有效API密钥时应通过认证', async () => {
+  it('提供有效API密钥时应通过认证 - headers', async () => {
     // 创建一个带有 auth 插件和模拟端点的应用
     const app = new Elysia().use(auth).get('/', () => '');
 
@@ -64,6 +64,17 @@ describe('auth-plugin', () => {
         },
       }),
     );
+
+    // 验证响应
+    expect(response.status).toBe(200);
+  });
+
+  it('提供有效API密钥时应通过认证 - query', async () => {
+    // 创建一个带有 auth 插件和模拟端点的应用
+    const app = new Elysia().use(auth).get('/', () => '');
+
+    // 发送一个包含有效 API 密钥的请求
+    const response = await app.handle(new Request('http://localhost/?key=test-auth-key'));
 
     // 验证响应
     expect(response.status).toBe(200);

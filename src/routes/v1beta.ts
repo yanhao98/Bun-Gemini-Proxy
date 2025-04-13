@@ -12,6 +12,20 @@ import { perfLog } from '../utils/logger';
 export const v1betaRoutes = new Elysia({ prefix: '/v1beta' })
   .use((await import('elysia-requestid')).requestID().as('plugin'))
   .use(auth)
+  .get('/models', async function models(ctx) {
+    const xGoogApiKey = keyManager.getNextApiKey();
+    perfLog(ctx, `[密钥分配] API密钥已分配: ${maskAPIKey(xGoogApiKey)}`);
+    const apiURL = `${GEMINI_BASE_URL}/${GEMINI_API_VERSION}/models`;
+    perfLog(ctx, `[请求转发] 转发至Gemini API: ${apiURL}`);
+    const response = await fetch(apiURL, {
+      method: 'GET',
+      headers: { [GEMINI_API_HEADER_NAME]: xGoogApiKey },
+      signal: AbortSignal.timeout(10 * 1000), // 超时
+    });
+    perfLog(ctx, `[响应接收] Gemini API返回状态码: ${response.status}`);
+    ctx.set.status = response.status;
+    return response.json() as Promise<unknown>;
+  })
   .post(
     '/models/:modelAndMethod',
     async function* handle_post_v1beta_models_model_and_action(ctx) {

@@ -1,6 +1,5 @@
 import { treaty } from '@elysiajs/eden';
-import { GoogleGenerativeAI } from '@google/generative-ai';
-import { describe, it as ittt, spyOn } from 'bun:test';
+import { describe, expect, it as ittt, spyOn } from 'bun:test';
 import Elysia from 'elysia';
 import { v1betaRoutes } from './v1beta';
 
@@ -15,7 +14,7 @@ describe('v1beta 仅本地调试', async () => {
     it = ittt.skip as typeof it;
   }
 
-  it('接口转发', async () => {
+  it('内容生成 接口转发', async () => {
     spyOn(console, 'log') /* .mockImplementation(() => {}) */;
 
     console.log('[👤] 请求开始'.padEnd(80, '--'));
@@ -71,25 +70,21 @@ describe('v1beta 仅本地调试', async () => {
     console.log('[👤] 请求结束.');
   });
 
-  it('@google/generative-ai', async () => {
-    const genAI = new GoogleGenerativeAI(Bun.env.GEMINI_API_KEYS.slice(0, 39));
-    const model = genAI.getGenerativeModel(
-      { model: 'gemini-1.5-flash' },
-      // {
-      //   baseUrl: 'http://localhost:7860',
-      // },
-    );
-    try {
-      const result = await model.generateContentStream(q);
-      const finalResponse = await result.response;
-      const text = finalResponse.text();
-      console.log(`text :>> `, text);
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        console.error(`Error: ${error.message}`);
-      } else {
-        console.error(`Unknown error: ${error}`);
-      }
-    }
+  it('models', async () => {
+    const { data, error, response } = await treaty(
+      v1betaRoutes,
+    ).v1beta.models.get({
+      query: {
+        key: Bun.env.AUTH_KEY,
+      },
+    });
+
+    console.debug(`response.status :>> `, response.status);
+    console.debug(`response.statusText :>> `, response.statusText);
+    console.debug(`error?.value :>> `, error?.value);
+    console.debug(`Object.keys(data) :>> `, Object.keys(data as any));
+    expect(data).toBeDefined();
+    expect(data).toBeInstanceOf(Object);
+    expect(data).toHaveProperty('models');
   });
 });

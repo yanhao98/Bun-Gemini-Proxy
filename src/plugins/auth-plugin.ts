@@ -7,8 +7,17 @@ import { perfLog } from '../utils/logger';
 export const auth = new Elysia({ name: '@h/auth' })
   .use((await import('elysia-requestid')).requestID().as('plugin'))
   .onBeforeHandle((ctx) => {
-    perfLog(ctx, `[🔑] 检查请求头: ${JSON.stringify(ctx.request.headers)}`);
-    const authKey = ctx.request.headers.get(GEMINI_API_HEADER_NAME);
+    perfLog(
+      ctx,
+      `[🔑] [认证] headers: ${JSON.stringify({
+        headers: ctx.request.headers,
+        query: ctx.query,
+      })}`,
+    );
+
+    const authKey =
+      ctx.request.headers.get(GEMINI_API_HEADER_NAME) ||
+      new URLSearchParams(ctx.query).get('key');
 
     if (!authKey) {
       return ctx.error(
