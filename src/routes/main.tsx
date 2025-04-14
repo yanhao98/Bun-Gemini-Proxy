@@ -1,6 +1,4 @@
 import Elysia from 'elysia';
-// eslint-disable-next-line no-unused-vars
-import { Html } from '@elysiajs/html';
 import { MainPage } from '../components/MainPage';
 
 export const mainRoutes = new Elysia()

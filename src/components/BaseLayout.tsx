@@ -1,6 +1,3 @@
-// eslint-disable-next-line no-unused-vars
-import { Html } from '@elysiajs/html';
-
 interface BaseLayoutProps {
   title?: string;
   children: string | string[];

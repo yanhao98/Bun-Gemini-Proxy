@@ -74,7 +74,9 @@ describe('auth-plugin', () => {
     const app = new Elysia().use(auth).get('/', () => '');
 
     // 发送一个包含有效 API 密钥的请求
-    const response = await app.handle(new Request('http://localhost/?key=test-auth-key'));
+    const response = await app.handle(
+      new Request('http://localhost/?key=test-auth-key'),
+    );
 
     // 验证响应
     expect(response.status).toBe(200);
