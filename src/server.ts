@@ -24,9 +24,7 @@ export const app = new Elysia()
   .use(serverTiming({ enabled: true }))
   .listen(7860);
 
-consola.success(
-  `🦊 Gemini 代理服务启动成功! 运行于 ${app.server?.hostname}:${app.server?.port}`,
-);
+consola.success(`🦊 Gemini 代理服务启动成功! 运行于 ${app.server?.url}`);
 
 consola.success(`🦊 服务启动耗时: ${performance.now() - t1} 毫秒`);
 

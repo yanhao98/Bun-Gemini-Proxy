@@ -8,6 +8,6 @@ export const mainRoutes = new Elysia()
       headers: { 'Content-Type': 'image/x-icon' },
     });
   })
-  .get('/', function get_main() {
-    return <MainPage />;
+  .get('/', function get_main(app) {
+    return <MainPage pendingRequests={app.server?.pendingRequests || 0} />;
   });

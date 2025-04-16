@@ -1,10 +1,16 @@
+import type { Server } from 'bun';
 import { BaseLayout } from './BaseLayout';
 import prettyMs from 'pretty-ms';
 
-export function MainPage() {
+interface Props {
+  pendingRequests: Server['pendingRequests'];
+}
+
+export function MainPage({ pendingRequests }: Props) {
   return (
     <BaseLayout>
-      System Status: Active | Uptime: {prettyMs(process.uptime() * 1000)}
+      运行时间：{prettyMs(process.uptime() * 1000)} | 待处理请求：
+      {pendingRequests.toString()}
     </BaseLayout>
   );
 }

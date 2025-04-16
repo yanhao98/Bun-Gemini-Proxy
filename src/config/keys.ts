@@ -26,7 +26,7 @@ export class KeyManager {
 
     // 将逗号分隔的密钥字符串转换为数组并去重
     const keyArray = keysFromEnv.split(',').map((key) => key.trim());
-    this.apiKeys = [...new Set(keyArray)].filter(key => key.length > 0);
+    this.apiKeys = [...new Set(keyArray)].filter((key) => key.length > 0);
     // console.debug(`从环境变量加载的API密钥: `, JSON.stringify(this.apiKeys));
 
     if (this.apiKeys.length === 0) {

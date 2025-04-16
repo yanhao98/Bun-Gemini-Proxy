@@ -108,7 +108,7 @@ describe('KeyManager', () => {
 
     // 验证密钥数量（去重后应该只有3个）
     expect(manager.getKeyCount()).toBe(3);
-    
+
     // 验证轮询行为是否正确（确保密钥已去重）
     expect(manager.getNextApiKey()).toBe('key1');
     expect(manager.getNextApiKey()).toBe('key2');
