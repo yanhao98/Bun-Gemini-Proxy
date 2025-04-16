@@ -1,3 +1,5 @@
+import { perfStreamManager } from './stream';
+
 function _performanceNow(): string {
   return `⏱️ ${String(performance.now()).padEnd(14, '0')}`;
 }
@@ -13,6 +15,8 @@ export function createLogger() {
       /* `[${_performanceNow()}]`, */ `📝 [${ctx.requestID}]`,
       ...args,
     );
+    // 将日志数据广播到 SSE 流
+    perfStreamManager.broadcast({ ctx, args });
   };
 }
 
