@@ -48,7 +48,9 @@ export const v1betaRoutes = new Elysia({ prefix: '/v1beta' })
         perfLog(
           ctx,
           `[响应接收] Gemini API返回状态码: ${response.status}`,
+          response.ok ? `[成功]` : await response.clone().text(),
         );
+        // console.debug(`await response.clone().text() :>> `, await response.clone().text());
 
         ctx.set.status = response.status;
 
@@ -59,6 +61,7 @@ export const v1betaRoutes = new Elysia({ prefix: '/v1beta' })
         if (!response.ok) return await response.clone().json();
 
         for await (const value of response.body!.values()) {
+          // console.debug(`new TextDecoder().decode(value) :>> `, new TextDecoder().decode(value));
           perfLog(
             ctx,
             `[数据流传输] 接收数据分片，长度: ${value?.length} 字节`,
