@@ -48,9 +48,7 @@ export const v1betaRoutes = new Elysia({ prefix: '/v1beta' })
         perfLog(
           ctx,
           `[响应接收] Gemini API返回状态码: ${response.status}`,
-          response.ok
-            ? undefined
-            : JSON.stringify(await response.clone().json()),
+          JSON.stringify(await response.clone().json()),
         );
 
         ctx.set.status = response.status;
