@@ -13,7 +13,7 @@ export class KeyManager {
   }
 
   /**
-   * 从环境变量加载API密钥
+   * 从环境变量加载API密钥，并去除重复的密钥
    */
   private loadApiKeys(): void {
     // 从环境变量中获取API密钥
@@ -24,8 +24,9 @@ export class KeyManager {
       return;
     }
 
-    // 将逗号分隔的密钥字符串转换为数组
-    this.apiKeys = keysFromEnv.split(',').map((key) => key.trim());
+    // 将逗号分隔的密钥字符串转换为数组并去重
+    const keyArray = keysFromEnv.split(',').map((key) => key.trim());
+    this.apiKeys = [...new Set(keyArray)].filter(key => key.length > 0);
     // console.debug(`从环境变量加载的API密钥: `, JSON.stringify(this.apiKeys));
 
     if (this.apiKeys.length === 0) {
