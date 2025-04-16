@@ -45,7 +45,13 @@ export const v1betaRoutes = new Elysia({ prefix: '/v1beta' })
           body: ctx.request.body,
           signal: AbortSignal.timeout(5 * 60 * 1000), // 超时
         });
-        perfLog(ctx, `[响应接收] Gemini API返回状态码: ${response.status}`);
+        perfLog(
+          ctx,
+          `[响应接收] Gemini API返回状态码: ${response.status}`,
+          response.ok
+            ? undefined
+            : JSON.stringify(await response.clone().json()),
+        );
 
         ctx.set.status = response.status;
 
