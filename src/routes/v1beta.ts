@@ -48,7 +48,8 @@ export const v1betaRoutes = new Elysia({ prefix: '/v1beta' })
         perfLog(
           ctx,
           `[响应接收] Gemini API返回状态码: ${response.status}`,
-          response.ok ? `[成功]` : await response.clone().text(),
+          response.ok ? `✅` : `❌`,
+          ...(response.ok ? [] : [await response.clone().text()]),
         );
         // console.debug(`await response.clone().text() :>> `, await response.clone().text());
 
