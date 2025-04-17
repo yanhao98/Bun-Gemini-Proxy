@@ -19,7 +19,7 @@ export function BaseLayout({ title, children }: BaseLayoutProps) {
         <style>{`[un-cloak] { display: none; }`}</style>
       </head>
 
-      <body un-cloak>
+      <body un-cloak class="bg-gray-100">
         <main class="flex flex-col items-center justify-center min-h-screen bg-gray-100 text-gray-900">
           {children}
         </main>

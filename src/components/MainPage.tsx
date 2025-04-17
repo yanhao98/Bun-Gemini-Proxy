@@ -34,7 +34,8 @@ export function MainPage({
     <BaseLayout>
       <div class="max-w-2xl mx-auto p-6 bg-white rounded-lg shadow-lg">
         <h1 class="text-3xl font-bold mb-6 text-gray-800 border-b pb-3">
-          🐰 Bun 运行中
+          <button onclick={toIIFEString(handleClick)}> 🐰 </button>
+          Bun 运行中
         </h1>
 
         <div class="space-y-4">
@@ -77,6 +78,13 @@ export function MainPage({
             </div>
           </div>
 
+          <button
+            class="mt-6 w-full px-4 py-2 bg-blue-500 text-white rounded-md font-medium transition-colors duration-200 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
+            onclick={toIIFEString(handleClick)}
+          >
+            刷新
+          </button>
+
           {Object.keys(keyUsageStats).length > 0 && (
             <div class="bg-gray-50 p-4 rounded-md space-y-2">
               <h2 class="text-gray-700 font-medium mb-2">API密钥使用情况</h2>
@@ -91,13 +99,6 @@ export function MainPage({
             </div>
           )}
         </div>
-
-        <button
-          class="mt-6 w-full px-4 py-2 bg-blue-500 text-white rounded-md font-medium transition-colors duration-200 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
-          onclick={toIIFEString(handleClick)}
-        >
-          刷新
-        </button>
       </div>
     </BaseLayout>
   );
