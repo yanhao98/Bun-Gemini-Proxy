@@ -59,16 +59,24 @@ export const v1betaRoutes = new Elysia({ prefix: '/v1beta' })
         perfLog(
           ctx,
           `[响应接收] Gemini API返回状态码: ${response.status}`,
-          response.ok ? `✅` : `❌`,
-          ...(response.ok ? [] : [await response.clone().text()]),
+          ...(response.ok ? [`✅`] : [`❌`, await response.clone().text()]),
         );
         // console.debug(`await response.clone().text() :>> `, await response.clone().text());
 
         ctx.set.status = response.status;
 
-        // XXX: 处理错误响应？
-        // if (response.status === 400)
-        //   return makeGeminiErrorJson(400, { ... });
+        if (
+          // XXX: 直接 !response.ok ？
+          response.status === 400 ||
+          response.status === 500 ||
+          response.status === 403
+        )
+          return createGeminiError(
+            response.status,
+            `[Gemini API错误] 状态码: ${response.status}, 详情: ${await response
+              .clone()
+              .text()}`,
+          );
 
         if (
           !response.ok ||
