@@ -55,20 +55,6 @@ export function MainPage({
             <span class="text-gray-800">{keyCount}</span>
           </div>
 
-          {Object.keys(keyUsageStats).length > 0 && (
-            <div class="bg-gray-50 p-4 rounded-md space-y-2">
-              <h2 class="text-gray-700 font-medium mb-2">API密钥使用情况</h2>
-              <div class="grid grid-cols-1 gap-2">
-                {Object.entries(keyUsageStats).map(([key, count]) => (
-                  <div class="flex justify-between items-center">
-                    <span class="text-gray-600">{maskAPIKey(key)}</span>
-                    <span class="text-gray-800 font-mono">{count} 次</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
           <div class="bg-gray-50 p-4 rounded-md space-y-2">
             <h2 class="text-gray-700 font-medium mb-2">内存占用</h2>
             <div class="grid grid-cols-1 gap-2">
@@ -90,6 +76,20 @@ export function MainPage({
               </div>
             </div>
           </div>
+
+          {Object.keys(keyUsageStats).length > 0 && (
+            <div class="bg-gray-50 p-4 rounded-md space-y-2">
+              <h2 class="text-gray-700 font-medium mb-2">API密钥使用情况</h2>
+              <div class="grid grid-cols-1 gap-2">
+                {Object.entries(keyUsageStats).map(([key, count]) => (
+                  <div class="flex justify-between items-center">
+                    <span class="text-gray-600">{maskAPIKey(key)}</span>
+                    <span class="text-gray-800 font-mono">{count} 次</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         <button

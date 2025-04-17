@@ -1,7 +1,8 @@
 {
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "bun run --watch src/server.ts",
+    "all": "run-p lint format test",
+    "test": "bun test",
     "lint": "bunx oxlint --fix",
     "format": "bunx prettier --write ."
   },
@@ -21,7 +22,8 @@
   },
   "devDependencies": {
     "@google/generative-ai": "^0.24.0",
-    "bun-types": "latest"
+    "bun-types": "latest",
+    "npm-run-all2": "^7.0.2"
   },
   "module": "src/index.js"
 }
