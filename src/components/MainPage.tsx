@@ -34,7 +34,7 @@ export function MainPage({
     <BaseLayout>
       <div class="max-w-2xl mx-auto p-6 bg-white rounded-lg shadow-lg">
         <h1 class="text-3xl font-bold mb-6 text-gray-800 border-b pb-3">
-          <button onclick={toIIFEString(handleClick)}> 🐰 </button>
+          <a href="/"> 🐰 </a>
           Bun 运行中
         </h1>
 

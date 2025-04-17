@@ -77,13 +77,21 @@ export class KeyManager {
   }
 
   /**
-   * 获取所有密钥的使用计数
+   * 获取所有密钥的使用计数，按使用次数排序
    */
   public getKeyUsageStats(): Record<string, number> {
     const stats: Record<string, number> = {};
-    this.keyUsageCount.forEach((count, key) => {
+
+    // 将 Map 转换为数组，按使用次数排序
+    const sortedEntries = Array.from(this.keyUsageCount.entries()).sort(
+      (a, b) => b[1] - a[1],
+    ); // 从高到低排序
+
+    // 将排序后的结果转换为对象
+    sortedEntries.forEach(([key, count]) => {
       stats[key] = count;
     });
+
     return stats;
   }
 }

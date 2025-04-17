@@ -1,7 +1,11 @@
 import { Elysia, t } from 'elysia';
 import { keyManager } from '../config/keys';
 import { auth } from '../plugins/auth-plugin';
-import { createGeminiError, maskAPIKey } from '../utils';
+import {
+  createGeminiError,
+  handleGeminiErrorResponse,
+  maskAPIKey,
+} from '../utils';
 import {
   GEMINI_API_HEADER_NAME,
   GEMINI_API_VERSION,
@@ -12,19 +16,25 @@ import { perfLog } from '../utils/logger';
 export const v1betaRoutes = new Elysia({ prefix: '/v1beta' })
   .use((await import('elysia-requestid')).requestID().as('plugin'))
   .use(auth)
-  .get('/models', async function models(ctx) {
+  .get('/models', async function models(ctx): Promise<unknown> {
     const xGoogApiKey = keyManager.getNextApiKey();
     perfLog(ctx, `[密钥分配] API密钥已分配: ${maskAPIKey(xGoogApiKey)}`);
+
     const apiURL = `${GEMINI_BASE_URL}/${GEMINI_API_VERSION}/models`;
     perfLog(ctx, `[请求转发] 转发至Gemini API: ${apiURL}`);
+
     const response = await fetch(apiURL, {
       method: 'GET',
       headers: { [GEMINI_API_HEADER_NAME]: xGoogApiKey },
       signal: AbortSignal.timeout(10 * 1000), // 超时
     });
     perfLog(ctx, `[响应接收] Gemini API返回状态码: ${response.status}`);
+
     ctx.set.status = response.status;
-    return response.json() as Promise<unknown>;
+
+    if (!response.ok) return handleGeminiErrorResponse(response);
+
+    return response.json();
   })
   .post(
     '/models/:modelAndMethod',
@@ -61,31 +71,17 @@ export const v1betaRoutes = new Elysia({ prefix: '/v1beta' })
           `[响应接收] Gemini API返回状态码: ${response.status}`,
           ...(response.ok ? [`✅`] : [`❌`, await response.clone().text()]),
         );
-        // console.debug(`await response.clone().text() :>> `, await response.clone().text());
 
         ctx.set.status = response.status;
 
-        if (
-          // XXX: 直接 !response.ok ？
-          response.status === 400 ||
-          response.status === 500 ||
-          response.status === 403
-        )
-          return createGeminiError(
-            response.status,
-            `[Gemini API错误] 状态码: ${response.status}, 详情: ${await response
-              .clone()
-              .text()}`,
-          );
+        if (!response.ok) return handleGeminiErrorResponse(response);
 
-        if (
-          !response.ok ||
-          method === 'generateContent' // 非流式响应
-        )
-          return await response.clone().json();
+        if (method === 'generateContent') {
+          // 非流式响应
+          return await response.json();
+        }
 
         for await (const value of response.body!.values()) {
-          // console.debug(`new TextDecoder().decode(value) :>> `, new TextDecoder().decode(value));
           perfLog(
             ctx,
             `[数据流传输] 接收数据分片，长度: ${value?.length} 字节`,
