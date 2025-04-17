@@ -1,6 +1,8 @@
+import type { Children } from "@kitajs/html";
+
 interface BaseLayoutProps {
   title?: string;
-  children: string | string[];
+  children: Children;
 }
 
 export function BaseLayout({ title, children }: BaseLayoutProps) {
@@ -8,10 +10,10 @@ export function BaseLayout({ title, children }: BaseLayoutProps) {
     <html lang="zh-CN">
       <head>
         <title>{title}</title>
-        <script src="https://cdn.jsdelivr.net/npm/@unocss/runtime"></script>
+        <script src="https://testingcf.jsdelivr.net/npm/@unocss/runtime"></script>
         <link
           rel="stylesheet"
-          href="https://cdn.jsdelivr.net/npm/@unocss/reset/tailwind.min.css"
+          href="https://testingcf.jsdelivr.net/npm/@unocss/reset/tailwind.min.css"
         />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <style>{`[un-cloak] { display: none; }`}</style>
