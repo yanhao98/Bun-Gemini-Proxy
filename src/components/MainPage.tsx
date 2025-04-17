@@ -26,19 +26,23 @@ export function MainPage({ pendingRequests }: PropsWithChildren<Props>) {
   return (
     <BaseLayout>
       <div class="max-w-2xl mx-auto p-6 bg-white rounded-lg shadow-lg">
-        <h1 class="text-3xl font-bold mb-6 text-gray-800 border-b pb-3">🐰 Bun 运行中</h1>
-        
+        <h1 class="text-3xl font-bold mb-6 text-gray-800 border-b pb-3">
+          🐰 Bun 运行中
+        </h1>
+
         <div class="space-y-4">
           <div class="flex items-center justify-between p-3 bg-gray-50 rounded-md">
             <span class="text-gray-600 font-medium">运行时间</span>
-            <span class="text-gray-800">{prettyMs(process.uptime() * 1000)}</span>
+            <span class="text-gray-800">
+              {prettyMs(process.uptime() * 1000)}
+            </span>
           </div>
-          
+
           <div class="flex items-center justify-between p-3 bg-gray-50 rounded-md">
             <span class="text-gray-600 font-medium">待处理请求</span>
             <span class="text-gray-800">{pendingRequests.toString()}</span>
           </div>
-          
+
           <div class="bg-gray-50 p-4 rounded-md space-y-2">
             <h2 class="text-gray-700 font-medium mb-2">内存占用</h2>
             <div class="grid grid-cols-1 gap-2">
@@ -48,11 +52,15 @@ export function MainPage({ pendingRequests }: PropsWithChildren<Props>) {
               </div>
               <div class="flex justify-between items-center">
                 <span class="text-gray-600">已用堆内存</span>
-                <span class="text-gray-800 font-mono">{formatMB(mem.heapUsed)}</span>
+                <span class="text-gray-800 font-mono">
+                  {formatMB(mem.heapUsed)}
+                </span>
               </div>
               <div class="flex justify-between items-center">
                 <span class="text-gray-600">堆总量</span>
-                <span class="text-gray-800 font-mono">{formatMB(mem.heapTotal)}</span>
+                <span class="text-gray-800 font-mono">
+                  {formatMB(mem.heapTotal)}
+                </span>
               </div>
             </div>
           </div>

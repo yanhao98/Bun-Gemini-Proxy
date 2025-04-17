@@ -1,4 +1,4 @@
-import type { Children } from "@kitajs/html";
+import type { Children } from '@kitajs/html';
 
 interface BaseLayoutProps {
   title?: string;

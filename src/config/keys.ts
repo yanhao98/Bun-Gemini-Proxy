@@ -2,11 +2,11 @@ import { consola } from 'consola';
 
 /**
  * Gemini API密钥管理器
- * 负责管理API密钥并提供轮询功能
+ * 负责管理API密钥并提供加权随机选择功能
  */
 export class KeyManager {
   private apiKeys: string[] = [];
-  private currentIndex: number = 0;
+  private keyUsageCount: Map<string, number> = new Map();
 
   constructor() {
     this.loadApiKeys();
@@ -34,23 +34,39 @@ export class KeyManager {
     } else {
       consola.success(`成功加载了 ${this.apiKeys.length} 个 API 密钥`);
     }
+
+    // 初始化使用计数器
+    this.apiKeys.forEach((key) => this.keyUsageCount.set(key, 0));
   }
 
   /**
-   * 获取下一个可用的API密钥（轮询方式）
+   * 获取下一个可用的API密钥（加权随机选择方式）
+   * 使用次数较少的密钥有更高的概率被选中
    */
   public getNextApiKey(): string {
     if (this.apiKeys.length === 0) {
       throw new Error('没有可用的 API 密钥');
     }
 
-    // 获取当前密钥
-    const apiKey = this.apiKeys[this.currentIndex];
+    // 查找当前使用次数最少的值
+    const minUsage = Math.min(...Array.from(this.keyUsageCount.values()));
 
-    // 更新索引，实现轮询
-    this.currentIndex = (this.currentIndex + 1) % this.apiKeys.length;
+    // 找出使用次数等于最小使用次数的所有密钥
+    const leastUsedKeys = this.apiKeys.filter(
+      (key) => this.keyUsageCount.get(key) === minUsage,
+    );
 
-    return apiKey;
+    // 从使用次数最少的密钥中随机选择一个
+    const selectedKey =
+      leastUsedKeys[Math.floor(Math.random() * leastUsedKeys.length)];
+
+    // 更新使用计数
+    this.keyUsageCount.set(
+      selectedKey,
+      (this.keyUsageCount.get(selectedKey) || 0) + 1,
+    );
+
+    return selectedKey;
   }
 
   /**

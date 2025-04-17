@@ -95,8 +95,13 @@ describe('KeyManager', () => {
     // 创建 KeyManager 实例
     const manager = new KeyManager();
 
-    // 验证第一个密钥没有空格
-    expect(manager.getNextApiKey()).toBe('key1');
+    // 获取密钥并验证它是去除空格后的有效密钥之一
+    const key = manager.getNextApiKey();
+    expect(['key1', 'key2', 'key3']).toContain(key);
+
+    // 验证获取的密钥没有空格（通过检查前后是否有多余空格）
+    expect(key).toBe(key.trim());
+    expect(key).not.toContain(' ');
   });
 
   it('应该移除重复的API密钥', () => {
@@ -109,25 +114,68 @@ describe('KeyManager', () => {
     // 验证密钥数量（去重后应该只有3个）
     expect(manager.getKeyCount()).toBe(3);
 
-    // 验证轮询行为是否正确（确保密钥已去重）
-    expect(manager.getNextApiKey()).toBe('key1');
-    expect(manager.getNextApiKey()).toBe('key2');
-    expect(manager.getNextApiKey()).toBe('key3');
-    expect(manager.getNextApiKey()).toBe('key1'); // 应该回到第一个密钥
+    // 验证选择的密钥是否在有效范围内
+    const key = manager.getNextApiKey();
+    expect(['key1', 'key2', 'key3']).toContain(key);
   });
 
-  it('应该以轮询方式获取API密钥', () => {
+  it('应该以加权随机方式选择密钥', () => {
     // 设置测试用的API密钥
     Bun.env.GEMINI_API_KEYS = 'key1,key2,key3';
 
     // 创建 KeyManager 实例
     const manager = new KeyManager();
 
-    // 验证轮询行为
-    expect(manager.getNextApiKey()).toBe('key1');
-    expect(manager.getNextApiKey()).toBe('key2');
-    expect(manager.getNextApiKey()).toBe('key3');
-    // 应该回到第一个密钥
-    expect(manager.getNextApiKey()).toBe('key1');
+    // 获取100次密钥，验证所有密钥都被使用到
+    const usedKeys = new Set();
+    for (let i = 0; i < 100; i++) {
+      usedKeys.add(manager.getNextApiKey());
+    }
+
+    // 验证所有密钥都被使用到
+    expect(usedKeys.size).toBe(3);
+    expect(usedKeys.has('key1')).toBe(true);
+    expect(usedKeys.has('key2')).toBe(true);
+    expect(usedKeys.has('key3')).toBe(true);
+  });
+
+  it('应该优先选择使用次数较少的密钥', () => {
+    // 设置测试用的API密钥
+    Bun.env.GEMINI_API_KEYS = 'key1,key2,key3';
+
+    // 创建 KeyManager 实例并获取私有属性访问
+    const manager = new KeyManager();
+
+    // 统计每个密钥被选中的次数
+    const counts = { key1: 0, key2: 0, key3: 0 };
+
+    // 第一轮：各选一次，应该是均匀分布的
+    for (let i = 0; i < 3; i++) {
+      const key = manager.getNextApiKey();
+      counts[key as keyof typeof counts]++;
+    }
+
+    // 验证第一轮后每个密钥都被使用了一次
+    expect(counts.key1).toBe(1);
+    expect(counts.key2).toBe(1);
+    expect(counts.key3).toBe(1);
+
+    // 重置计数器，准备第二轮测试
+    Object.keys(counts).forEach(
+      (key) => (counts[key as keyof typeof counts] = 0),
+    );
+
+    // 模拟一个密钥使用较多的情况
+    // 需要访问私有属性，这里通过类型断言和索引访问来实现
+    // @ts-ignore - 访问私有属性用于测试
+    (manager as any).keyUsageCount.set('key1', 5);
+    // @ts-ignore - 访问私有属性用于测试
+    (manager as any).keyUsageCount.set('key2', 2);
+    // @ts-ignore - 访问私有属性用于测试
+    (manager as any).keyUsageCount.set('key3', 0);
+
+    // 获取下一个密钥，应该是使用次数最少的key3
+    const nextKey = manager.getNextApiKey();
+    expect(nextKey).toBe('key3');
   });
 });
