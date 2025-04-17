@@ -11,7 +11,6 @@ interface Props {
   keyCount: number;
 }
 
-
 export function MainPage({
   pendingRequests,
   keyUsageStats,
