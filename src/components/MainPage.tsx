@@ -2,9 +2,12 @@ import type { Server } from 'bun';
 import { BaseLayout } from './BaseLayout';
 import prettyMs from 'pretty-ms';
 import type { PropsWithChildren } from '@kitajs/html';
+import { maskAPIKey } from '../utils';
 
 interface Props {
   pendingRequests: Server['pendingRequests'];
+  keyUsageStats: Record<string, number>;
+  keyCount: number;
 }
 
 function toIIFEString(fn: Function): string {
@@ -15,7 +18,11 @@ function toIIFEString(fn: Function): string {
   return `(${fn.toString()})()`;
 }
 
-export function MainPage({ pendingRequests }: PropsWithChildren<Props>) {
+export function MainPage({
+  pendingRequests,
+  keyUsageStats,
+  keyCount,
+}: PropsWithChildren<Props>) {
   function handleClick() {
     window.location.reload();
   }
@@ -42,6 +49,25 @@ export function MainPage({ pendingRequests }: PropsWithChildren<Props>) {
             <span class="text-gray-600 font-medium">待处理请求</span>
             <span class="text-gray-800">{pendingRequests.toString()}</span>
           </div>
+
+          <div class="flex items-center justify-between p-3 bg-gray-50 rounded-md">
+            <span class="text-gray-600 font-medium">API密钥数量</span>
+            <span class="text-gray-800">{keyCount}</span>
+          </div>
+
+          {Object.keys(keyUsageStats).length > 0 && (
+            <div class="bg-gray-50 p-4 rounded-md space-y-2">
+              <h2 class="text-gray-700 font-medium mb-2">API密钥使用情况</h2>
+              <div class="grid grid-cols-1 gap-2">
+                {Object.entries(keyUsageStats).map(([key, count]) => (
+                  <div class="flex justify-between items-center">
+                    <span class="text-gray-600">{maskAPIKey(key)}</span>
+                    <span class="text-gray-800 font-mono">{count} 次</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           <div class="bg-gray-50 p-4 rounded-md space-y-2">
             <h2 class="text-gray-700 font-medium mb-2">内存占用</h2>

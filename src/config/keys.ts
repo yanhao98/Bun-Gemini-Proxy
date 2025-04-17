@@ -75,6 +75,17 @@ export class KeyManager {
   public getKeyCount(): number {
     return this.apiKeys.length;
   }
+
+  /**
+   * 获取所有密钥的使用计数
+   */
+  public getKeyUsageStats(): Record<string, number> {
+    const stats: Record<string, number> = {};
+    this.keyUsageCount.forEach((count, key) => {
+      stats[key] = count;
+    });
+    return stats;
+  }
 }
 
 // 导出单例实例

@@ -20,6 +20,7 @@
     "pretty-ms": "^9.2.0"
   },
   "devDependencies": {
+    "@google/generative-ai": "^0.24.0",
     "bun-types": "latest"
   },
   "module": "src/index.js"

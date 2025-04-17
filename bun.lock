@@ -18,6 +18,7 @@
         "pretty-ms": "^9.2.0",
       },
       "devDependencies": {
+        "@google/generative-ai": "^0.24.0",
         "bun-types": "latest",
       },
     },
@@ -36,6 +37,8 @@
     "@elysiajs/swagger": ["@elysiajs/swagger@1.2.2", "", { "dependencies": { "@scalar/themes": "^0.9.52", "@scalar/types": "^0.0.12", "openapi-types": "^12.1.3", "pathe": "^1.1.2" }, "peerDependencies": { "elysia": ">= 1.2.0" } }, "sha512-DG0PbX/wzQNQ6kIpFFPCvmkkWTIbNWDS7lVLv3Puy6ONklF14B4NnbDfpYjX1hdSYKeCqKBBOuenh6jKm8tbYA=="],
 
     "@google/genai": ["@google/genai@0.8.0", "https://registry.npmmirror.com/@google/genai/-/genai-0.8.0.tgz", { "dependencies": { "google-auth-library": "^9.14.2", "ws": "^8.18.0" } }, "sha512-Zs+OGyZKyMbFofGJTR9/jTQSv8kITh735N3tEuIZj4VlMQXTC0soCFahysJ9NaeenRlD7xGb6fyqmX+FwrpU6Q=="],
+
+    "@google/generative-ai": ["@google/generative-ai@0.24.0", "https://registry.npmmirror.com/@google/generative-ai/-/generative-ai-0.24.0.tgz", {}, "sha512-fnEITCGEB7NdX0BhoYZ/cq/7WPZ1QS5IzJJfC3Tg/OwkvBetMiVJciyaan297OvE4B9Jg1xvo0zIazX/9sGu1Q=="],
 
     "@kitajs/html": ["@kitajs/html@4.2.7", "https://registry.npmmirror.com/@kitajs/html/-/html-4.2.7.tgz", { "dependencies": { "csstype": "^3.1.3" } }, "sha512-HMAHy0GLH7i7wY1o0W1TeugNhtWefUkhb9l6zx6v2fIkR1cPlUtQQdkTt/jkBA7723yO7uBERcXFPZpWT7HWPQ=="],
 
