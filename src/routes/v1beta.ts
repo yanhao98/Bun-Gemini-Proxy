@@ -35,7 +35,9 @@ export const v1betaRoutes = new Elysia({ prefix: '/v1beta' })
       let apiURL = `${GEMINI_BASE_URL}/${GEMINI_API_VERSION}/models/${ctx.params.modelAndMethod}`;
       const searchParams = new URLSearchParams(ctx.query);
       searchParams.delete('key');
-      apiURL += `?${searchParams.toString()}`;
+      const queryString = searchParams.toString();
+      // 检查是否有剩余参数，并直接拼接查询字符串
+      if (queryString) apiURL += `?${queryString}`;
 
       perfLog(ctx, `[请求转发] 转发至Gemini API: ${apiURL}`);
       try {
