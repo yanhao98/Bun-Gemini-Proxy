@@ -29,6 +29,10 @@ export const v1betaRoutes = new Elysia({ prefix: '/v1beta' })
   .post(
     '/models/:modelAndMethod',
     async function* handle_post_v1beta_models_model_and_action(ctx) {
+      const modelAndMethod = ctx.params.modelAndMethod;
+      const model = modelAndMethod.split(':')[0];
+      const method = modelAndMethod.split(':')[1];
+
       const xGoogApiKey = keyManager.getNextApiKey();
       perfLog(ctx, `[密钥分配] API密钥已分配: ${maskAPIKey(xGoogApiKey)}`);
 
@@ -39,7 +43,12 @@ export const v1betaRoutes = new Elysia({ prefix: '/v1beta' })
       // 检查是否有剩余参数，并直接拼接查询字符串
       if (queryString) apiURL += `?${queryString}`;
 
-      perfLog(ctx, `[请求转发] 转发至Gemini API: ${apiURL}`);
+      perfLog(
+        ctx,
+        `[请求转发]`,
+        `模型: ${model}, 方法: ${method}`, // streamGenerateContent/generateContent
+        `转发至Gemini API: ${apiURL}`,
+      );
       try {
         const response = await fetch(apiURL, {
           method: 'POST',
@@ -61,7 +70,11 @@ export const v1betaRoutes = new Elysia({ prefix: '/v1beta' })
         // if (response.status === 400)
         //   return makeGeminiErrorJson(400, { ... });
 
-        if (!response.ok) return await response.clone().json();
+        if (
+          !response.ok ||
+          method === 'generateContent' // 非流式响应
+        )
+          return await response.clone().json();
 
         for await (const value of response.body!.values()) {
           // console.debug(`new TextDecoder().decode(value) :>> `, new TextDecoder().decode(value));

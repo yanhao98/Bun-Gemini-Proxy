@@ -14,7 +14,9 @@ describe('v1beta 仅本地调试', async () => {
     it = ittt.skip as typeof it;
   }
 
-  it('内容生成 接口转发', async () => {
+  // TODO: 非流式。
+
+  it('转发streamGenerateContent', async () => {
     spyOn(console, 'log') /* .mockImplementation(() => {}) */;
 
     console.log('[👤] 请求开始'.padEnd(80, '--'));
