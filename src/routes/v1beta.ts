@@ -21,6 +21,8 @@ export const v1betaRoutes = new Elysia({ prefix: '/v1beta' })
   .use((await import('elysia-requestid')).requestID().as('plugin'))
   .use(auth)
   .get('/models', async function models(ctx): Promise<unknown> {
+    ctx.server!.timeout(ctx.request, 10 * 1000);
+
     const xGoogApiKey = keyManager.getNextApiKey();
     perfLog(ctx, `[密钥分配] API密钥已分配: ${maskAPIKey(xGoogApiKey)}`);
 
@@ -30,7 +32,7 @@ export const v1betaRoutes = new Elysia({ prefix: '/v1beta' })
     const response = await fetch(apiURL, {
       method: 'GET',
       headers: { [GEMINI_API_HEADER_NAME]: xGoogApiKey },
-      signal: AbortSignal.timeout(1 * 60 * 1000), // 超时
+      signal: AbortSignal.timeout(9 * 1000), // 超时
       verbose: true,
     });
     perfLog(ctx, `[响应接收] Gemini API返回状态码: ${response.status}`);
