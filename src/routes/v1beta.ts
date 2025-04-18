@@ -1,3 +1,4 @@
+import { dns } from 'bun';
 import { Elysia, t } from 'elysia';
 import { keyManager } from '../config/keys';
 import { auth } from '../plugins/auth-plugin';
@@ -13,6 +14,8 @@ import {
 } from '../utils/const';
 import { perfLog } from '../utils/logger';
 
+dns.prefetch(new URL(GEMINI_BASE_URL).hostname);
+
 export const v1betaRoutes = new Elysia({ prefix: '/v1beta' })
   .use((await import('elysia-requestid')).requestID().as('plugin'))
   .use(auth)
@@ -26,7 +29,8 @@ export const v1betaRoutes = new Elysia({ prefix: '/v1beta' })
     const response = await fetch(apiURL, {
       method: 'GET',
       headers: { [GEMINI_API_HEADER_NAME]: xGoogApiKey },
-      signal: AbortSignal.timeout(5 * 60 * 1000), // 超时
+      signal: AbortSignal.timeout(1 * 60 * 1000), // 超时
+      verbose: true,
     });
     perfLog(ctx, `[响应接收] Gemini API返回状态码: ${response.status}`);
 
@@ -42,7 +46,7 @@ export const v1betaRoutes = new Elysia({ prefix: '/v1beta' })
       ctx.request.signal.addEventListener('abort', () => {
         perfLog(ctx, `[请求取消] 请求已取消`);
       });
-  
+
       const modelAndMethod = ctx.params.modelAndMethod;
       const model = modelAndMethod.split(':')[0];
       const method = modelAndMethod.split(':')[1];
