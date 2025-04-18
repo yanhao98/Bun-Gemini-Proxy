@@ -39,6 +39,10 @@ export const v1betaRoutes = new Elysia({ prefix: '/v1beta' })
   .post(
     '/models/:modelAndMethod',
     async function* handle_post_v1beta_models_model_and_action(ctx) {
+      ctx.request.signal.addEventListener('abort', () => {
+        perfLog(ctx, `[请求取消] 请求已取消`);
+      });
+  
       const modelAndMethod = ctx.params.modelAndMethod;
       const model = modelAndMethod.split(':')[0];
       const method = modelAndMethod.split(':')[1];
@@ -69,6 +73,7 @@ export const v1betaRoutes = new Elysia({ prefix: '/v1beta' })
         perfLog(
           ctx,
           `[响应接收] Gemini API返回状态码: ${response.status}`,
+          ` 内容类型: ${response.headers.get('content-type')}`,
           ...(response.ok ? [`✅`] : [`❌`, await response.clone().text()]),
         );
 
