@@ -12,7 +12,51 @@ env:
   TZ: Asia/Shanghai
 
 jobs:
+  test:
+    name: 构建代码，代码检查和测试代码
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 检出代码
+        uses: actions/checkout@v4
+
+      - name: 🥟 设置 Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      # Setup Node.js environment
+      - name: 📦 设置 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 'lts/*'
+
+      - name: 📚 安装依赖
+        run: bun install --frozen-lockfile
+
+      - name: 🔍 代码检查
+        run: bun run lint
+
+      - name: 🧪 测试
+        run: bun test --coverage
+
+      - name: 🏗️ 构建代码
+        run: |
+          bun build \
+            --compile \
+            --minify-whitespace \
+            --minify-syntax \
+            --target bun \
+            --outfile ./build/server \
+            ./src/server.ts
+
+      - name: 📏 检查构建文件大小
+        run: |
+          echo "构建文件大小："
+          du -h ./build/server
+
   build-and-push-ghcr:
+    needs: test
     runs-on: ubuntu-latest
     env:
       # https://github.com/docker/metadata-action/tree/v5/?tab=readme-ov-file#semver

@@ -13,15 +13,19 @@ import {
   GEMINI_BASE_URL,
 } from '../utils/const';
 import { perfLog } from '../utils/logger';
+import { beginPlugin } from '../plugins/begin-plugin';
 
-dns.prefetch(new URL(GEMINI_BASE_URL).hostname);
-fetch.preconnect(`${GEMINI_BASE_URL}/${GEMINI_API_VERSION}`);
+setTimeout(() => {
+  dns.prefetch(new URL(GEMINI_BASE_URL).hostname);
+  // fetch.preconnect(`${GEMINI_BASE_URL}/${GEMINI_API_VERSION}`);
+}, 100);
 
 export const v1betaRoutes = new Elysia({ prefix: '/v1beta' })
+  .use(beginPlugin)
   .use((await import('elysia-requestid')).requestID().as('plugin'))
   .use(auth)
   .get('/models', async function models(ctx): Promise<unknown> {
-    ctx.server!.timeout(ctx.request, 10 * 1000);
+    // ctx.server!.timeout(ctx.request, 10 * 1000);
 
     const xGoogApiKey = keyManager.getNextApiKey();
     perfLog(ctx, `[密钥分配] API密钥已分配: ${maskAPIKey(xGoogApiKey)}`);
@@ -40,7 +44,6 @@ export const v1betaRoutes = new Elysia({ prefix: '/v1beta' })
     ctx.set.status = response.status;
 
     if (!response.ok) return handleGeminiErrorResponse(response);
-
     return response.json();
   })
   .post(
