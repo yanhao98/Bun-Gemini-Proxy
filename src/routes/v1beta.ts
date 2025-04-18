@@ -26,7 +26,7 @@ export const v1betaRoutes = new Elysia({ prefix: '/v1beta' })
     const response = await fetch(apiURL, {
       method: 'GET',
       headers: { [GEMINI_API_HEADER_NAME]: xGoogApiKey },
-      signal: AbortSignal.timeout(10 * 1000), // 超时
+      signal: AbortSignal.timeout(5 * 60 * 1000), // 超时
     });
     perfLog(ctx, `[响应接收] Gemini API返回状态码: ${response.status}`);
 
