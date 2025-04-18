@@ -3,6 +3,11 @@ import { describe, it as ittt } from 'bun:test';
 
 describe('GoogleGenAI', () => {
   let it = ittt;
+  if ('vscode' !== process.env.TERM_PROGRAM) {
+    console.info('非 vscode 环境，跳过测试');
+    it = ittt.skip as typeof it;
+  }
+
   it('generateContent', async () => {
     // for (let i = 0; i < 50; i++) {
     //   main();
