@@ -55,7 +55,10 @@ describe('Elysia', () => {
     try {
       const response = await fetch(request);
       log('客户端', '请求完成[首次]');
-      console.debug(`response.headers.get('content-type') :>> `, response.headers.get('content-type'));
+      console.debug(
+        `response.headers.get('content-type') :>> `,
+        response.headers.get('content-type'),
+      );
 
       const reader = response.body!.getReader();
 
