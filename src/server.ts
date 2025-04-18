@@ -22,7 +22,7 @@ export const app = new Elysia()
   // <<< Routes <<<
   .use(cors())
   .use(serverTiming({ enabled: true }))
-  .listen({ port: 7860, idleTimeout: 60 * 1000 });
+  .listen({ port: 7860, idleTimeout: 60 /* seconds */ });
 
 consola.success(`🦊 Gemini 代理服务启动成功! 运行于 ${app.server?.url}`);
 
