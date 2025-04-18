@@ -15,6 +15,7 @@ import {
 import { perfLog } from '../utils/logger';
 
 dns.prefetch(new URL(GEMINI_BASE_URL).hostname);
+fetch.preconnect(`${GEMINI_BASE_URL}/${GEMINI_API_VERSION}`);
 
 export const v1betaRoutes = new Elysia({ prefix: '/v1beta' })
   .use((await import('elysia-requestid')).requestID().as('plugin'))
