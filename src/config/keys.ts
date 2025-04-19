@@ -1,4 +1,3 @@
-import { RedisClient } from 'bun';
 import { consola } from 'consola';
 import { maskAPIKey } from '../utils';
 
@@ -104,7 +103,6 @@ export class KeyManager {
  */
 export class KeyManagerWithRedis extends KeyManager {
   private REDIS_KEY: string = 'gemini:keyUsageCount';
-  private redisClient: RedisClient;
   ready: Promise<void>;
 
   constructor() {
@@ -112,7 +110,6 @@ export class KeyManagerWithRedis extends KeyManager {
     if (!Bun.env.REDIS_URL) {
       consola.warn('REDIS_URL 环境变量未配置');
     }
-    this.redisClient = new RedisClient(Bun.env.REDIS_URL);
     this.ready = this.initializeKeyUsageCount();
   }
 
@@ -120,13 +117,13 @@ export class KeyManagerWithRedis extends KeyManager {
    * 从Redis获取使用计数
    */
   private async initializeKeyUsageCount(): Promise<void> {
-    await this.redisClient.connect();
-    this.redisClient.onclose = (error) => {
+    await Bun.redis.connect();
+    await Bun.sleep(1); // >>> https://github.com/oven-sh/bun/issues/19126
+    Bun.redis.onclose = (error) => {
       consola.error(`Redis连接中断(${Bun.env.REDIS_URL}): ${error.message}`);
     };
-    await Bun.sleep(1); // >>> https://github.com/oven-sh/bun/issues/19126
 
-    const exists = await this.redisClient.exists(this.REDIS_KEY);
+    const exists = await Bun.redis.exists(this.REDIS_KEY);
 
     if (exists === false) {
       consola.warn(`Redis中未找到历史密钥使用计数(${Bun.env.REDIS_URL})`);
@@ -135,17 +132,22 @@ export class KeyManagerWithRedis extends KeyManager {
 
     const keys = this.apiKeys;
     if (keys.length) {
-      let i = 0;
-      const counts = await this.redisClient.hmget(this.REDIS_KEY, keys);
+      let executionCount = 0;
+      const counts = await Bun.redis.hmget(this.REDIS_KEY, keys);
+      if (!Array.isArray(counts)) {
+        consola.error(`Redis hmget 返回的结果不是数组(${Bun.env.REDIS_URL})`);
+        return;
+      }
+
       keys.forEach((key, index) => {
         const count = counts[index];
-        if (count !== null) {
-          i++;
-          this.keyUsageCount.set(key, parseInt(count));
-        }
+        if (count === null) return;
+
+        executionCount++;
+        this.keyUsageCount.set(key, parseInt(count));
       });
       consola.success(
-        `从Redis加载了${i}个密钥的历史使用计数(${Bun.env.REDIS_URL})`,
+        `从Redis加载了${executionCount}个密钥的历史使用计数(${Bun.env.REDIS_URL})`,
       );
     }
   }
@@ -158,7 +160,7 @@ export class KeyManagerWithRedis extends KeyManager {
 
     // 更新Redis中的使用计数（非阻塞方式）
     const currentCount = this.keyUsageCount.get(selectedKey) || 0;
-    this.redisClient
+    Bun.redis
       .hmset(this.REDIS_KEY, [selectedKey, currentCount.toString()])
       .then(() => {
         consola.success(

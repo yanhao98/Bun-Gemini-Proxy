@@ -15,14 +15,14 @@
     "@elysiajs/swagger": "^1.2.2",
     "@kitajs/ts-html-plugin": "^4.1.1",
     "consola": "^3.4.2",
-    "elysia": "latest",
+    "elysia": "^1.2.25",
     "elysia-requestid": "1.0.9",
     "pretty-ms": "^9.2.0"
   },
   "devDependencies": {
-    "@google/genai": "^0.8.0",
+    "@google/genai": "^0.9.0",
     "@google/generative-ai": "^0.24.0",
-    "bun-types": "latest"
+    "bun-types": "^1.2.10"
   },
   "module": "src/index.js"
 }
