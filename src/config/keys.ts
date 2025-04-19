@@ -165,7 +165,7 @@ export class KeyManagerWithRedis extends KeyManager {
           `更新Redis密钥使用计数成功: ${maskAPIKey(selectedKey)}`,
         );
       })
-      .catch((error) => {
+      .catch(function hmsetCatch(error) {
         consola.error(`更新Redis密钥使用计数失败: ${error.message}`);
       });
 
