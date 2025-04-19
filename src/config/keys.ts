@@ -160,13 +160,13 @@ export class KeyManagerWithRedis extends KeyManager {
 
     // 更新Redis中的使用计数（非阻塞方式）
     setTimeout(async () => {
-      const currentCount = this.keyUsageCount.get(selectedKey)!;
       if (!Bun.redis.connected) {
         consola.warn(
           `更新Redis密钥使用计数: Redis未连接(${Bun.env.REDIS_URL})，尝试重新连接`,
         );
         await Bun.redis.connect();
       }
+      const currentCount = this.keyUsageCount.get(selectedKey)!;
       Bun.redis
         .hmset(this.REDIS_KEY, [selectedKey, currentCount.toString()])
         .then(() => {
