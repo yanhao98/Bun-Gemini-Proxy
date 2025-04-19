@@ -1,3 +1,4 @@
+import { z } from 'zod';
 import { dns } from 'bun';
 import { Elysia, t } from 'elysia';
 import { keyManager } from '../config/keys';
@@ -15,10 +16,21 @@ import {
 import { perfLog } from '../utils/logger';
 import { beginPlugin } from '../plugins/begin-plugin';
 
+const modelsResponseSchema = z.object({
+  models: z.array(
+    z
+      .object({
+        name: z.string(),
+        description: z.string().optional(),
+      })
+      .passthrough(), // 允许未定义的键通过
+  ),
+});
+
 setTimeout(() => {
   dns.prefetch(new URL(GEMINI_BASE_URL).hostname);
   // fetch.preconnect(`${GEMINI_BASE_URL}/${GEMINI_API_VERSION}`);
-}, 100);
+}, 1);
 
 export const v1betaRoutes = new Elysia({ prefix: '/v1beta' })
   .use(beginPlugin)
@@ -44,7 +56,16 @@ export const v1betaRoutes = new Elysia({ prefix: '/v1beta' })
     ctx.set.status = response.status;
 
     if (!response.ok) return handleGeminiErrorResponse(response);
-    return response.json();
+
+    const jsonResponse = await response.json();
+    const { models, ...rest } = modelsResponseSchema.parse(jsonResponse);
+
+    return {
+      ...rest,
+      models: models
+        // 过滤掉包含 "deprecated" 的描述的模型
+        .filter(({ description }) => !description?.includes('deprecated')),
+    };
   })
   .post(
     '/models/:modelAndMethod',

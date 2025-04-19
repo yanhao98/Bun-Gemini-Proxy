@@ -159,17 +159,25 @@ export class KeyManagerWithRedis extends KeyManager {
     const selectedKey = super.getNextApiKey();
 
     // 更新Redis中的使用计数（非阻塞方式）
-    const currentCount = this.keyUsageCount.get(selectedKey) || 0;
-    Bun.redis
-      .hmset(this.REDIS_KEY, [selectedKey, currentCount.toString()])
-      .then(() => {
-        consola.success(
-          `更新Redis密钥使用计数成功: ${maskAPIKey(selectedKey)}`,
+    setTimeout(async () => {
+      const currentCount = this.keyUsageCount.get(selectedKey)!;
+      if (!Bun.redis.connected) {
+        consola.warn(
+          `更新Redis密钥使用计数: Redis未连接(${Bun.env.REDIS_URL})，尝试重新连接`,
         );
-      })
-      .catch(function hmsetCatch(error) {
-        consola.error(`更新Redis密钥使用计数失败: ${error.message}`);
-      });
+        await Bun.redis.connect();
+      }
+      Bun.redis
+        .hmset(this.REDIS_KEY, [selectedKey, currentCount.toString()])
+        .then(() => {
+          consola.success(
+            `更新Redis密钥使用计数成功: ${maskAPIKey(selectedKey)}`,
+          );
+        })
+        .catch(function hmsetCatch(error) {
+          consola.error(`更新Redis密钥使用计数失败: ${error.message}`);
+        });
+    }, 0);
 
     return selectedKey;
   }

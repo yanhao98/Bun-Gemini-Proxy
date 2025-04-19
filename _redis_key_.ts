@@ -20,4 +20,7 @@ setInterval(() => {
     `Bun.redis.connected :>> `,
     Bun.redis.connected,
   );
+  if (!Bun.redis.connected) {
+    process.exit(1);
+  }
 }, 1000);

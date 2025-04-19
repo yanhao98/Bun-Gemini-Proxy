@@ -85,10 +85,13 @@ describe('v1beta 仅本地调试', async () => {
     console.debug(`response.statusText :>> `, response.statusText);
     console.debug(`error?.value :>> `, error?.value);
     if (data) {
-      console.debug(`Object.keys(data) :>> `, Object.keys(data as any));
+      console.debug(`Object.keys(data) :>> `, Object.keys(data));
+      console.debug(`typeof data :>> `, typeof data);
       expect(data).toBeDefined();
       expect(data).toBeInstanceOf(Object);
       expect(data).toHaveProperty('models');
+      const modelsLength = Object.keys((data as any).models).length;
+      console.debug(`modelsLength :>> `, modelsLength);
     }
   });
 });
