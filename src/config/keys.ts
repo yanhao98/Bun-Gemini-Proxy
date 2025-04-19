@@ -120,6 +120,9 @@ export class KeyManagerWithRedis extends KeyManager {
    */
   private async initializeKeyUsageCount(): Promise<void> {
     await this.redisClient.connect();
+    this.redisClient.onclose = (error) => {
+      consola.error(`Redis(${Bun.env.REDIS_URL})连接关闭:`, error.message);
+    };
     await Bun.sleep(1); // >>> https://github.com/oven-sh/bun/issues/19126
 
     const exists = await this.redisClient.exists(this.REDIS_KEY);
