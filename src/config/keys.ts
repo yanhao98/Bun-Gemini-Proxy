@@ -125,7 +125,7 @@ export class KeyManagerWithRedis extends KeyManager {
     const exists = await this.redisClient.exists(this.REDIS_KEY);
 
     if (exists === false) {
-      consola.warn('Redis中没有找到密钥使用计数');
+      consola.warn(`Redis(${Bun.env.REDIS_URL})中没有找到密钥使用计数`);
       return;
     }
 
