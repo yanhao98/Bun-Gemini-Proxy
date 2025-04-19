@@ -18,7 +18,6 @@ console.debug(`result :>> `, result);
 // Explicitly close the connection when done
 // client.close();
 
-// --- hmget 的使用好像有问题。
 {
   const key = 'hmset:test';
   const hmsetResult = await redis.hmset(key, [
@@ -36,4 +35,25 @@ console.debug(`result :>> `, result);
 
   const mixedResult = await client.hmget(key, ['name', 'nonexistent']);
   console.debug(`mixedResult :>> `, mixedResult);
+}
+
+{
+  console.debug('=====================');
+  const redisKey = 'test:keyUsageCount';
+  const hmsetResult = await client.hmset(redisKey, ['key1', '1', 'key2', '0']);
+  console.debug(`hmsetResult :>> `, hmsetResult);
+
+  const hmgetResult = await client.hmget(redisKey, ['key1', 'key2', 'key3']);
+  console.debug(`hmgetResult :>> `, hmgetResult);
+
+  const hmsetResult2 = await client.hmset(redisKey, ['key1', '2']);
+  console.debug(`hmsetResult2 :>> `, hmsetResult2);
+
+  const hmgetResult2 = await client.hmget(redisKey, ['key1', 'key2']);
+  console.debug(`hmgetResult2 :>> `, hmgetResult2);
+  // ---
+  // hmsetResult :>>  OK
+  // hmgetResult :>>  [ "1", "0", null ]
+  // hmsetResult2 :>>  OK
+  // hmgetResult2 :>>  [ "2", "0" ]
 }

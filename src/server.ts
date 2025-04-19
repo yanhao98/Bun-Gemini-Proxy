@@ -7,9 +7,12 @@ import Elysia from 'elysia';
 import { errorHandler } from './plugins/error-handler';
 import { mainRoutes } from './routes/main';
 import { v1betaRoutes } from './routes/v1beta';
+import { keyManager } from './config/keys';
 
 consola.info(`🦊 进程启动耗时: ${process.uptime() * 1000} 毫秒`);
 const t1 = performance.now();
+
+await keyManager.ready; // 等待密钥初始化完成
 
 export const app = new Elysia()
   // .use((await import('./plugins/trace')).trace.as('global'))

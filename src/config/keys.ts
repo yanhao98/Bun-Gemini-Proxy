@@ -1,3 +1,4 @@
+import { RedisClient } from 'bun';
 import { consola } from 'consola';
 
 /**
@@ -5,8 +6,8 @@ import { consola } from 'consola';
  * 负责管理API密钥并提供加权随机选择功能
  */
 export class KeyManager {
-  private apiKeys: string[] = [];
-  private keyUsageCount: Map<string, number> = new Map();
+  protected apiKeys: string[] = [];
+  protected keyUsageCount: Map<string, number> = new Map();
 
   constructor() {
     this.loadApiKeys();
@@ -96,5 +97,72 @@ export class KeyManager {
   }
 }
 
+/**
+ * 带有Redis支持的Gemini API密钥管理器
+ * 从Redis读取和保存密钥使用计数
+ */
+export class KeyManagerWithRedis extends KeyManager {
+  private REDIS_KEY: string = 'gemini:keyUsageCount';
+  private redisClient: RedisClient;
+  ready: Promise<void>;
+
+  constructor() {
+    super();
+    if (!Bun.env.REDIS_URL) {
+      consola.warn('没有找到 REDIS_URL 环境变量，请检查 .env 文件');
+    }
+    this.redisClient = new RedisClient(Bun.env.REDIS_URL);
+    this.ready = this.initializeKeyUsageCount();
+  }
+
+  /**
+   * 从Redis获取使用计数
+   */
+  private async initializeKeyUsageCount(): Promise<void> {
+    await this.redisClient.connect();
+    await Bun.sleep(1); // >>> https://github.com/oven-sh/bun/issues/19126
+
+    const exists = await this.redisClient.exists(this.REDIS_KEY);
+
+    if (exists === false) {
+      consola.warn('Redis中没有找到密钥使用计数');
+      return;
+    }
+
+    const keys = this.apiKeys;
+    if (keys.length) {
+      let i = 0;
+      const counts = await this.redisClient.hmget(this.REDIS_KEY, keys);
+      keys.forEach((key, index) => {
+        const count = counts[index];
+        if (count !== null) {
+          i++;
+          this.keyUsageCount.set(key, parseInt(count));
+        }
+      });
+      consola.success(
+        `成功从Redis(${Bun.env.REDIS_URL})加载了 ${i} 个密钥的使用计数`,
+      );
+    }
+  }
+
+  /**
+   * 获取下一个可用的API密钥，并将使用计数保存到Redis
+   */
+  public getNextApiKey(): string {
+    const selectedKey = super.getNextApiKey();
+
+    // 更新Redis中的使用计数（非阻塞方式）
+    const currentCount = this.keyUsageCount.get(selectedKey) || 0;
+    this.redisClient
+      .hmset(this.REDIS_KEY, [selectedKey, currentCount.toString()])
+      .catch((error) => {
+        consola.error('更新Redis使用计数失败:', error);
+      });
+
+    return selectedKey;
+  }
+}
+
 // 导出单例实例
-export const keyManager = new KeyManager();
+export const keyManager = new KeyManagerWithRedis();
