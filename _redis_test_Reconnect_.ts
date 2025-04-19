@@ -93,10 +93,13 @@ try {
   await testIoRedis();
   console.debug();
   await testBunRedis();
+} catch (e) {
+  console.error('Error:', (e as Error).message);
 } finally {
-  console.debug('-----');
-  const newClient = new Bun.RedisClient('redis://localhost:6379');
-  const newClientValue = await newClient.get('key-Bun.Redis');
-  console.log('Redis value after restart with new client:', newClientValue);
-  console.debug('END');
+  console.debug('------');
 }
+
+await Bun.sleep(100);
+const newClient = new Bun.RedisClient('redis://localhost:6379');
+const newClientValue = await newClient.get('key-Bun.Redis');
+console.log('Redis value after restart with new client:', newClientValue);
