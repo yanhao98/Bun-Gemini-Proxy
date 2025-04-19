@@ -17,6 +17,7 @@
     "consola": "^3.4.2",
     "elysia": "^1.2.25",
     "elysia-requestid": "1.0.9",
+    "ioredis": "^5.6.1",
     "pretty-ms": "^9.2.0",
     "zod": "^3.24.3"
   },
