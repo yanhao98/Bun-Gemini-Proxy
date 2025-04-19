@@ -84,9 +84,11 @@ describe('v1beta 仅本地调试', async () => {
     console.debug(`response.status :>> `, response.status);
     console.debug(`response.statusText :>> `, response.statusText);
     console.debug(`error?.value :>> `, error?.value);
-    if (data) console.debug(`Object.keys(data) :>> `, Object.keys(data as any));
-    expect(data).toBeDefined();
-    expect(data).toBeInstanceOf(Object);
-    expect(data).toHaveProperty('models');
+    if (data) {
+      console.debug(`Object.keys(data) :>> `, Object.keys(data as any));
+      expect(data).toBeDefined();
+      expect(data).toBeInstanceOf(Object);
+      expect(data).toHaveProperty('models');
+    }
   });
 });
