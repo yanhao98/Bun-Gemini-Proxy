@@ -3,6 +3,7 @@ import { treaty } from '@elysiajs/eden';
 import { describe, expect, it as ittt, spyOn } from 'bun:test';
 import Elysia from 'elysia';
 import { v1betaRoutes } from './v1beta';
+import { GoogleGenAI } from '@google/genai';
 
 let q = '';
 q = '‘莎士比亚’是几个字？';
@@ -14,8 +15,6 @@ describe('v1beta 仅本地调试', async () => {
     console.info('非 vscode 环境，跳过测试');
     it = ittt.skip as typeof it;
   }
-
-  // TODO: 非流式。
 
   it('转发streamGenerateContent', async () => {
     spyOn(console, 'log') /* .mockImplementation(() => {}) */;
@@ -32,18 +31,7 @@ describe('v1beta 仅本地调试', async () => {
       .post(
         { contents: [{ parts: [{ text: q }] }] },
         {
-          headers: {
-            host: 'localhost:7860',
-            connection: 'keep-alive',
-            'content-type': 'application/json',
-            accept: '*/*',
-            'accept-language': '*',
-            'sec-fetch-mode': 'cors',
-            'user-agent': 'node',
-            'accept-encoding': 'gzip, deflate',
-            'x-goog-api-client': 'genai-js/0.18.0',
-            'x-goog-api-key': Bun.env.AUTH_KEY,
-          },
+          headers: { 'x-goog-api-key': Bun.env.AUTH_KEY },
           query: {
             alt: 'sse',
           },
@@ -95,25 +83,34 @@ describe('v1beta 仅本地调试', async () => {
       console.debug(`modelsLength :>> `, modelsLength);
     }
   });
+});
+
+describe('openai 兼容', () => {
+  let it = ittt;
+  if ('vscode' !== process.env.TERM_PROGRAM) {
+    console.info('非 vscode 环境，跳过测试');
+    it = ittt.skip as typeof it;
+  }
+
+  const openai = new OpenAI({
+    // apiKey: Bun.env.GEMINI_API_KEY,
+    // baseURL: 'https://generativelanguage.googleapis.com/v1beta/openai/',
+    apiKey: Bun.env.AUTH_KEY,
+    baseURL: 'http://localhost:7860/v1beta/openai/',
+  });
 
   // https://ai.google.dev/gemini-api/docs/openai?hl=zh-cn#javascript_1
-  it('openai 兼容', async () => {
-    const openai = new OpenAI({
-      // apiKey: Bun.env.GEMINI_API_KEY,
-      // baseURL: 'https://generativelanguage.googleapis.com/v1beta/openai/',
-      apiKey: Bun.env.AUTH_KEY,
-      baseURL: 'http://localhost:7860/v1beta/openai/',
-    });
+  it('列出模型', async () => {
+    const list = await openai.models.list();
+    console.debug(`list.data.length :>> `, list.data.length);
+    expect(list.data.length).toBeGreaterThan(0);
+  });
+  it('检索模型', async () => {
+    const model = await openai.models.retrieve('gemini-2.0-flash');
+    expect(model.id).toBe('models/gemini-2.0-flash');
+  });
 
-    // 列出模型
-    // const list = await openai.models.list();
-    // console.debug(`list.data.length :>> `, list.data.length);
-
-    // // 检索模型
-    // const model = await openai.models.retrieve('gemini-2.0-flash');
-    // console.debug(model.id);
-
-    // 流式
+  it('是流式', async () => {
     const completion = await openai.chat.completions.create({
       model: 'gemini-2.0-flash',
       messages: [
@@ -123,8 +120,63 @@ describe('v1beta 仅本地调试', async () => {
       stream: true,
     });
 
+    let count = 0;
+    let text = '';
     for await (const chunk of completion) {
-      console.log(chunk.choices[0].delta.content);
+      text += chunk.choices[0].delta.content;
+      count++;
     }
+    expect(count).toBeGreaterThan(0);
+    expect(text).toContain('H');
+    console.debug(`text :>> `, text);
+  });
+
+  it('非流式', async () => {
+    const completion = await openai.chat.completions.create({
+      model: 'gemini-2.0-flash',
+      messages: [
+        { role: 'system', content: 'You are a helpful assistant.' },
+        { role: 'user', content: 'Hello!!' },
+      ],
+      stream: false,
+    });
+    expect(completion.choices[0].message.content).toContain('Hello');
+  });
+});
+
+describe('GoogleGenAI', () => {
+  let it = ittt;
+  if ('vscode' !== process.env.TERM_PROGRAM) {
+    console.info('非 vscode 环境，跳过测试');
+    it = ittt.skip as typeof it;
+  }
+
+  const ai = new GoogleGenAI({
+    apiKey: Bun.env.AUTH_KEY,
+    httpOptions: { baseUrl: 'http://localhost:7860' },
+  });
+
+  it('非流式', async () => {
+    const response = await ai.models.generateContent({
+      model: 'gemini-2.0-flash-001',
+      contents: 'Hello, world!',
+    });
+    expect(response.text).toContain('H'); // Hello/Hi
+  });
+
+  it('是流式', async () => {
+    const response = await ai.models.generateContentStream({
+      model: 'gemini-2.0-flash-001',
+      contents: 'Hello, world!',
+    });
+    let count = 0;
+    let text = '';
+    for await (const chunk of response) {
+      text += chunk.text;
+      count++;
+    }
+    expect(count).toBeGreaterThan(0);
+    expect(text).toContain('H'); // Hello/Hi
+    console.debug(`text :>> `, text);
   });
 });

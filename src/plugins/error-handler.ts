@@ -5,8 +5,8 @@ export const errorHandler = () => {
   const app = new Elysia({
     name: '@h/errorHandler',
   });
-  app.onError(async function onErrorHandler({ code, request }) {
-    consola.error(`🦊 错误: code: ${code}`);
+  app.onError(async function onErrorHandler({ code, request, error }) {
+    consola.error(`🦊 错误: code: ${code}, error: ${error}`);
     console.error(request);
   });
 
