@@ -166,6 +166,7 @@ export class KeyManagerWithRedis extends KeyManager {
       .then(() => {
         consola.success(
           `更新Redis密钥使用计数成功: ${maskAPIKey(selectedKey)}`,
+          currentCount,
         );
       })
       .catch((error) => {

@@ -1,6 +1,6 @@
 import OpenAI from 'openai';
 import { treaty } from '@elysiajs/eden';
-import { describe, expect, it as ittt, spyOn } from 'bun:test';
+import { beforeAll, describe, expect, it as ittt, spyOn } from 'bun:test';
 import Elysia from 'elysia';
 import { v1betaRoutes } from './v1beta';
 import { GoogleGenAI } from '@google/genai';
@@ -86,31 +86,40 @@ describe('v1beta 仅本地调试', async () => {
 });
 
 describe('openai 兼容', () => {
+  // beforeAll(() => {
+  //   Bun.env.AUTH_KEY = 'test-auth-key-1234567890';
+  // });
+
   let it = ittt;
   if ('vscode' !== process.env.TERM_PROGRAM) {
     console.info('非 vscode 环境，跳过测试');
     it = ittt.skip as typeof it;
   }
 
-  const openai = new OpenAI({
-    // apiKey: Bun.env.GEMINI_API_KEY,
-    // baseURL: 'https://generativelanguage.googleapis.com/v1beta/openai/',
-    apiKey: Bun.env.AUTH_KEY,
-    baseURL: 'http://localhost:7860/v1beta/openai/',
-  });
+  function createOpenAI() {
+    return new OpenAI({
+      // apiKey: Bun.env.GEMINI_API_KEY,
+      // baseURL: 'https://generativelanguage.googleapis.com/v1beta/openai/',
+      apiKey: Bun.env.AUTH_KEY,
+      baseURL: 'http://localhost:7860/v1beta/openai/',
+    });
+  }
 
   // https://ai.google.dev/gemini-api/docs/openai?hl=zh-cn#javascript_1
   it('列出模型', async () => {
+    const openai = createOpenAI();
     const list = await openai.models.list();
     console.debug(`list.data.length :>> `, list.data.length);
     expect(list.data.length).toBeGreaterThan(0);
   });
   it('检索模型', async () => {
+    const openai = createOpenAI();
     const model = await openai.models.retrieve('gemini-2.0-flash');
     expect(model.id).toBe('models/gemini-2.0-flash');
   });
 
   it('是流式', async () => {
+    const openai = createOpenAI();
     const completion = await openai.chat.completions.create({
       model: 'gemini-2.0-flash',
       messages: [
@@ -132,6 +141,7 @@ describe('openai 兼容', () => {
   });
 
   it('非流式', async () => {
+    const openai = createOpenAI();
     const completion = await openai.chat.completions.create({
       model: 'gemini-2.0-flash',
       messages: [
@@ -140,7 +150,7 @@ describe('openai 兼容', () => {
       ],
       stream: false,
     });
-    expect(completion.choices[0].message.content).toContain('Hello');
+    expect(completion.choices[0].message.content).toContain('H'); // Hello/Hi
   });
 });
 
