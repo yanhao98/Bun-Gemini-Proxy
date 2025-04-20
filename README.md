@@ -15,3 +15,7 @@ curl "http://localhost:7860/v1beta/models/gemini-1.5-flash:streamGenerateContent
 - [Bun.redis 问题](https://github.com/oven-sh/bun/issues?q=label%3Aredis%20state%3Aopen)
   - [database 支持问题](https://github.com/oven-sh/bun/issues/19126)
   - [自动重连 问题](https://github.com/oven-sh/bun/issues/19131)
+- 重试请求
+  - https://markmichon.com/automatic-retries-with-fetch/
+  - https://www.npmjs.com/package/fetch-retry
+  - https://jsr.io/%40mr/retry
