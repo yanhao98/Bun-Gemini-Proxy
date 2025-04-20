@@ -67,6 +67,68 @@ export const v1betaRoutes = new Elysia({ prefix: '/v1beta' })
         .filter(({ description }) => !description?.includes('deprecated')),
     };
   })
+  .get('/openai/models', async function openaimodels(ctx): Promise<unknown> {
+    const xGoogApiKey = keyManager.getNextApiKey();
+    perfLog(ctx, `[密钥分配] API密钥已分配: ${maskAPIKey(xGoogApiKey)}`);
+
+    console.debug(`### ctx.path :>> `, ctx.path);
+
+    const apiURL = `${GEMINI_BASE_URL}/${GEMINI_API_VERSION}/openai/models`;
+    perfLog(ctx, `[请求转发] 转发至Gemini API: ${apiURL}`);
+
+    const response = await fetch(apiURL, {
+      method: 'GET',
+      headers: { authorization: `Bearer ${xGoogApiKey}` },
+      signal: AbortSignal.timeout(9 * 1000), // 超时
+      verbose: true,
+    });
+    perfLog(ctx, `[响应接收] Gemini API返回状态码: ${response.status}`);
+    return response;
+  })
+  .get(
+    '/openai/models/:model',
+    async function openaimodel(ctx): Promise<unknown> {
+      const xGoogApiKey = keyManager.getNextApiKey();
+      perfLog(ctx, `[密钥分配] API密钥已分配: ${maskAPIKey(xGoogApiKey)}`);
+
+      console.debug(`### ctx.path :>> `, ctx.path);
+
+      const apiURL = `${GEMINI_BASE_URL}/${GEMINI_API_VERSION}/openai/models/${ctx.params.model}`;
+      perfLog(ctx, `[请求转发] 转发至Gemini API: ${apiURL}`);
+
+      const response = await fetch(apiURL, {
+        method: 'GET',
+        headers: { authorization: `Bearer ${xGoogApiKey}` },
+        signal: AbortSignal.timeout(9 * 1000), // 超时
+        verbose: true,
+      });
+      perfLog(ctx, `[响应接收] Gemini API返回状态码: ${response.status}`);
+      return response;
+    },
+  )
+  .post('/openai/chat/completions', async function openaichatcompletions(ctx) {
+    const xGoogApiKey = keyManager.getNextApiKey();
+    perfLog(ctx, `[密钥分配] API密钥已分配: ${maskAPIKey(xGoogApiKey)}`);
+
+    console.debug(`### ctx.path :>> `, ctx.path);
+
+    const apiURL = `${GEMINI_BASE_URL}/${GEMINI_API_VERSION}/openai/chat/completions`;
+    perfLog(ctx, `[请求转发] 转发至Gemini API: ${apiURL}`);
+
+    const response = await fetch(apiURL, {
+      method: 'POST',
+      body: ctx.request.body,
+      headers: { authorization: `Bearer ${xGoogApiKey}` },
+      signal: AbortSignal.timeout(9 * 1000), // 超时
+      // verbose: true,
+    });
+    ctx.set.status = response.status;
+    perfLog(
+      { requestID: ctx.requestID },
+      `[响应接收] Gemini API返回状态码: ${response.status}`,
+    );
+    return response;
+  })
   .post(
     '/models/:modelAndMethod',
     async function* handle_post_v1beta_models_model_and_action(ctx) {

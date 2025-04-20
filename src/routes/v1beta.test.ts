@@ -1,3 +1,4 @@
+import OpenAI from 'openai';
 import { treaty } from '@elysiajs/eden';
 import { describe, expect, it as ittt, spyOn } from 'bun:test';
 import Elysia from 'elysia';
@@ -92,6 +93,38 @@ describe('v1beta 仅本地调试', async () => {
       expect(data).toHaveProperty('models');
       const modelsLength = Object.keys((data as any).models).length;
       console.debug(`modelsLength :>> `, modelsLength);
+    }
+  });
+
+  // https://ai.google.dev/gemini-api/docs/openai?hl=zh-cn#javascript_1
+  it('openai 兼容', async () => {
+    const openai = new OpenAI({
+      // apiKey: Bun.env.GEMINI_API_KEY,
+      // baseURL: 'https://generativelanguage.googleapis.com/v1beta/openai/',
+      apiKey: Bun.env.AUTH_KEY,
+      baseURL: 'http://localhost:7860/v1beta/openai/',
+    });
+
+    // 列出模型
+    // const list = await openai.models.list();
+    // console.debug(`list.data.length :>> `, list.data.length);
+
+    // // 检索模型
+    // const model = await openai.models.retrieve('gemini-2.0-flash');
+    // console.debug(model.id);
+
+    // 流式
+    const completion = await openai.chat.completions.create({
+      model: 'gemini-2.0-flash',
+      messages: [
+        { role: 'system', content: 'You are a helpful assistant.' },
+        { role: 'user', content: 'Hello!!' },
+      ],
+      stream: true,
+    });
+
+    for await (const chunk of completion) {
+      console.log(chunk.choices[0].delta.content);
     }
   });
 });
