@@ -28,23 +28,24 @@ export const app = new Elysia()
   ) */
 
   // https://elysiajs.com/essential/life-cycle.html#example-5
-  .mapResponse(({ response, set }) => {
-    const isJson = typeof response === 'object';
+  // .mapResponse(({ response, set }) => {
+  //   const isJson = typeof response === 'object';
+  //   console.debug(`response :>> `, response);
 
-    const text = isJson
-      ? JSON.stringify(response)
-      : (response?.toString() ?? '');
+  //   const text = isJson ? JSON.stringify(response) : response?.toString() ?? '';
 
-    set.headers['Content-Encoding'] = 'gzip';
+  //   console.debug(`text :>> `, text);
 
-    return new Response(Bun.gzipSync(encoder.encode(text)), {
-      headers: {
-        'Content-Type': `${
-          isJson ? 'application/json' : 'text/plain'
-        }; charset=utf-8`,
-      },
-    });
-  })
+  //   set.headers['Content-Encoding'] = 'gzip';
+
+  //   return new Response(Bun.gzipSync(encoder.encode(text)), {
+  //     headers: {
+  //       'Content-Type': `${
+  //         isJson ? 'application/json' : 'text/plain'
+  //       }; charset=utf-8`,
+  //     },
+  //   });
+  // })
   .use(errorHandler())
   .use(html())
   .use(swagger())
