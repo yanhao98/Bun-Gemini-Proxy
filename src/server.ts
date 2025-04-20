@@ -16,8 +16,35 @@ if (Bun.env.NODE_ENV !== 'test') {
   await keyManager.ready; // 等待密钥初始化完成
 }
 
+const encoder = new TextEncoder();
+
 export const app = new Elysia()
   // .use((await import('./plugins/trace')).trace.as('global'))
+  // .use((await import('elysia-compress')).compression({}))
+  /* .use(
+    (await import('@labzzhq/compressor')).compression({
+      compress_stream: false,
+    }),
+  ) */
+
+  // https://elysiajs.com/essential/life-cycle.html#example-5
+  .mapResponse(({ response, set }) => {
+    const isJson = typeof response === 'object';
+
+    const text = isJson
+      ? JSON.stringify(response)
+      : (response?.toString() ?? '');
+
+    set.headers['Content-Encoding'] = 'gzip';
+
+    return new Response(Bun.gzipSync(encoder.encode(text)), {
+      headers: {
+        'Content-Type': `${
+          isJson ? 'application/json' : 'text/plain'
+        }; charset=utf-8`,
+      },
+    });
+  })
   .use(errorHandler())
   .use(html())
   .use(swagger())

@@ -9,6 +9,7 @@ export const auth = new Elysia({ name: '@h/auth' })
   // .use((await import('@elysiajs/bearer')).bearer())
   .onBeforeHandle((ctx) => {
     perfLog(ctx, `[🔑] [认证]`, ctx.path);
+    // console.debug(`headers: `, ctx.request.headers);
     // console.debug(
     //   `headers: ${JSON.stringify({
     //     headers: ctx.request.headers,

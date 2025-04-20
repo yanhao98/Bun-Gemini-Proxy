@@ -23,6 +23,8 @@ const modelsResponseSchema = z.object({
   ),
 });
 
+const decoder = new TextDecoder();
+
 setTimeout(() => {
   dns.prefetch(new URL(GEMINI_BASE_URL).hostname);
   // fetch.preconnect(`${GEMINI_BASE_URL}/${GEMINI_API_VERSION}`);
@@ -41,7 +43,9 @@ export const v1betaRoutes = new Elysia({ prefix: '/v1beta' })
 
     const response = await fetch(apiURL, {
       method: 'GET',
-      headers: { authorization: `Bearer ${xGoogApiKey}` },
+      headers: {
+        authorization: `Bearer ${xGoogApiKey}`,
+      },
       signal: AbortSignal.timeout(9 * 1000), // 超时
       // verbose: true,
     });
@@ -168,7 +172,7 @@ export const v1betaRoutes = new Elysia({ prefix: '/v1beta' })
 
       for await (const value of response.body!.values()) {
         perfLog(ctx, `[数据流传输] 接收数据分片，长度: ${value?.length} 字节`);
-        yield new TextDecoder().decode(value);
+        yield decoder.decode(value);
       }
       perfLog(ctx, `[数据流传输] 数据流传输完成`);
     } catch (error: unknown) {
