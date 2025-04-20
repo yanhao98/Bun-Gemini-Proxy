@@ -19,6 +19,7 @@
     "elysia-requestid": "1.0.9",
     "ioredis": "^5.6.1",
     "pretty-ms": "^9.2.0",
+    "redis": "^4.7.0",
     "zod": "^3.24.3"
   },
   "devDependencies": {
