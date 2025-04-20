@@ -50,7 +50,9 @@ export const v1betaRoutes = new Elysia({ prefix: '/v1beta' })
       // verbose: true,
     });
     perfLog(ctx, `[响应接收] Gemini API返回状态码: ${response.status}`);
-    return response;
+
+    return await response.json(); // 930 B
+    // return response; // 959 B
   })
   .get('/openai/models/:model', async function O_model(ctx): Promise<unknown> {
     const xGoogApiKey = keyManager.getNextApiKey();
@@ -66,7 +68,7 @@ export const v1betaRoutes = new Elysia({ prefix: '/v1beta' })
       // verbose: true,
     });
     perfLog(ctx, `[响应接收] Gemini API返回状态码: ${response.status}`);
-    return response;
+    return await response.json();
   })
   .post('/openai/chat/completions', async function O_chatcompletions(ctx) {
     const xGoogApiKey = keyManager.getNextApiKey();

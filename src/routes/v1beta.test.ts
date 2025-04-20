@@ -118,7 +118,7 @@ describe('openai 兼容', () => {
     expect(model.id).toBe('models/gemini-2.0-flash');
   });
 
-  it('是流式', async () => {
+  it('O是流式', async () => {
     const openai = createOpenAI();
     const completion = await openai.chat.completions.create({
       model: 'gemini-2.0-flash',
@@ -140,7 +140,7 @@ describe('openai 兼容', () => {
     console.debug(`text :>> `, text);
   });
 
-  it('非流式', async () => {
+  it('O非流式', async () => {
     const openai = createOpenAI();
     const completion = await openai.chat.completions.create({
       model: 'gemini-2.0-flash',
@@ -166,15 +166,16 @@ describe('GoogleGenAI', () => {
     httpOptions: { baseUrl: 'http://localhost:7860' },
   });
 
-  it('非流式', async () => {
+  it('G非流式', async () => {
     const response = await ai.models.generateContent({
       model: 'gemini-2.0-flash-001',
       contents: 'Hello, world!',
     });
+    console.debug(`response.text :>> `, response.text);
     expect(response.text).toContain('H'); // Hello/Hi
   });
 
-  it('是流式', async () => {
+  it('G是流式', async () => {
     const response = await ai.models.generateContentStream({
       model: 'gemini-2.0-flash-001',
       contents: 'Hello, world!',

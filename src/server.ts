@@ -28,23 +28,34 @@ export const app = new Elysia()
   ) */
 
   // https://elysiajs.com/essential/life-cycle.html#example-5
-  // .mapResponse(({ response, set }) => {
-  //   const isJson = typeof response === 'object';
-  //   console.debug(`response :>> `, response);
+  // .mapResponse(async ({ response, set }) => {
+  //   let text: string;
+  //   let isJson: boolean;
 
-  //   const text = isJson ? JSON.stringify(response) : response?.toString() ?? '';
+  //   if (response instanceof Response) {
+  //     text = await response.text();
+  //     isJson =
+  //       response.headers.get('Content-Type')?.includes('application/json') ??
+  //       false;
+  //   } else {
+  //     isJson = typeof response === 'object';
+  //     text = isJson ? JSON.stringify(response) : (response?.toString() ?? '');
+  //   }
+  //   if (text === '{}') {
+  //     return;
+  //   }
 
-  //   console.debug(`text :>> `, text);
+  //   if (text) {
+  //     set.headers['Content-Encoding'] = 'gzip';
 
-  //   set.headers['Content-Encoding'] = 'gzip';
-
-  //   return new Response(Bun.gzipSync(encoder.encode(text)), {
-  //     headers: {
-  //       'Content-Type': `${
-  //         isJson ? 'application/json' : 'text/plain'
-  //       }; charset=utf-8`,
-  //     },
-  //   });
+  //     return new Response(Bun.gzipSync(encoder.encode(text)), {
+  //       headers: {
+  //         'Content-Type': `${
+  //           isJson ? 'application/json' : 'text/plain'
+  //         }; charset=utf-8`,
+  //       },
+  //     });
+  //   }
   // })
   .use(errorHandler())
   .use(html())
