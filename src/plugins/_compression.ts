@@ -1,5 +1,6 @@
 export {};
 
+// 性能: https://github.com/vermaysha/elysia-compress/issues/149#issuecomment-2698804067
 // https://gist.github.com/kaitk/fa1e10e4af615b99bc1edd65e8ad7402
 
 // const encoder = new TextEncoder();
