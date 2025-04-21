@@ -58,6 +58,8 @@ jobs:
   build-and-push-ghcr:
     needs: test
     runs-on: ubuntu-latest
+    outputs:
+      imageid: ${{ steps.build-push.outputs.imageid }}
     env:
       # https://github.com/docker/metadata-action/tree/v5/?tab=readme-ov-file#semver
       # Event: push,     Ref: refs/head/main,       Tags: main
