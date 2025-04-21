@@ -7,56 +7,15 @@ import Elysia from 'elysia';
 import { errorHandler } from './plugins/error-handler';
 import { mainRoutes } from './routes/main';
 import { v1betaRoutes } from './routes/v1beta';
-import { keyManager } from './config/keys';
+import { keyManager, KeyManagerWithRedis } from './config/keys';
 
 consola.info(`🦊 进程启动耗时: ${process.uptime() * 1000} 毫秒`);
 const t1 = performance.now();
 
-if (Bun.env.NODE_ENV !== 'test') {
-  await keyManager.ready; // 等待密钥初始化完成
-}
-
-const encoder = new TextEncoder();
+if (keyManager instanceof KeyManagerWithRedis) await keyManager.ready;
 
 export const app = new Elysia()
   // .use((await import('./plugins/trace')).trace.as('global'))
-  // .use((await import('elysia-compress')).compression({}))
-  /* .use(
-    (await import('@labzzhq/compressor')).compression({
-      compress_stream: false,
-    }),
-  ) */
-
-  // https://elysiajs.com/essential/life-cycle.html#example-5
-  // .mapResponse(async ({ response, set }) => {
-  //   let text: string;
-  //   let isJson: boolean;
-
-  //   if (response instanceof Response) {
-  //     text = await response.text();
-  //     isJson =
-  //       response.headers.get('Content-Type')?.includes('application/json') ??
-  //       false;
-  //   } else {
-  //     isJson = typeof response === 'object';
-  //     text = isJson ? JSON.stringify(response) : (response?.toString() ?? '');
-  //   }
-  //   if (text === '{}') {
-  //     return;
-  //   }
-
-  //   if (text) {
-  //     set.headers['Content-Encoding'] = 'gzip';
-
-  //     return new Response(Bun.gzipSync(encoder.encode(text)), {
-  //       headers: {
-  //         'Content-Type': `${
-  //           isJson ? 'application/json' : 'text/plain'
-  //         }; charset=utf-8`,
-  //       },
-  //     });
-  //   }
-  // })
   .use(errorHandler())
   .use(html())
   .use(swagger())

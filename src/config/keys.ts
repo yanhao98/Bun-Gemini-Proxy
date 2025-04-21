@@ -18,25 +18,21 @@ export class KeyManager {
    * 从环境变量加载API密钥，并去除重复的密钥
    */
   private loadApiKeys(): void {
-    // 从环境变量中获取API密钥
     const keysFromEnv = Bun.env.GEMINI_API_KEYS;
 
     if (!keysFromEnv) {
       consola.warn('GEMINI_API_KEYS 环境变量未配置，请检查.env文件或部署配置');
       return;
     }
-
     // 将逗号分隔的密钥字符串转换为数组并去重
     const keyArray = keysFromEnv.split(',').map((key) => key.trim());
     this.apiKeys = [...new Set(keyArray)].filter((key) => key.length > 0);
-    // console.debug(`从环境变量加载的API密钥: `, JSON.stringify(this.apiKeys));
 
     if (this.apiKeys.length === 0) {
       consola.warn('API密钥列表为空，请检查GEMINI_API_KEYS环境变量配置');
     } else {
-      consola.success(`已加载 ${this.apiKeys.length} 个API密钥`);
+      consola.success(`已从环境变量加载 ${this.apiKeys.length} 个API密钥`);
     }
-
     // 初始化使用计数器
     this.apiKeys.forEach((key) => this.keyUsageCount.set(key, 0));
   }
@@ -70,7 +66,6 @@ export class KeyManager {
 
     return selectedKey;
   }
-
   /**
    * 获取可用的API密钥数量
    */
@@ -96,61 +91,154 @@ export class KeyManager {
 
     return stats;
   }
+
+  /**
+   * 更新特定密钥的使用计数
+   * @param key API密钥
+   * @param count 使用次数
+   */
+  protected updateKeyUsage(key: string, count: number): void {
+    this.keyUsageCount.set(key, count);
+  }
+
+  /**
+   * 获取所有API密钥
+   */
+  protected getApiKeys(): string[] {
+    return [...this.apiKeys];
+  }
+
+  /**
+   * 获取指定密钥的使用次数
+   */
+  protected getKeyUsageCount(key: string): number {
+    return this.keyUsageCount.get(key) || 0;
+  }
+}
+
+/**
+ * Redis客户端管理器
+ * 负责Redis连接和操作的封装
+ */
+export class RedisManager {
+  private redisClient: ReturnType<typeof createClient>;
+  public ready: Promise<void>;
+
+  constructor(private redisUrl: string = Bun.env.REDIS_URL || '') {
+    if (!this.redisUrl) {
+      consola.warn('REDIS_URL 未配置，请检查环境变量');
+    }
+
+    this.redisClient = createClient({ url: this.redisUrl });
+    this.redisClient.on('error', (error) => {
+      consola.error(
+        `Redis连接中断(${this.redisUrl}): ${(error as Error).message}`,
+      );
+    });
+
+    this.ready = this.connect();
+  }
+
+  /**
+   * 连接到Redis服务器
+   */
+  private async connect(): Promise<void> {
+    await this.redisClient.connect();
+    consola.success('Redis连接成功');
+  }
+
+  /**
+   * 从Redis加载密钥使用计数
+   */
+  public async loadKeyCounts(
+    redisKey: string,
+    keys: string[],
+  ): Promise<Map<string, number>> {
+    const result = new Map<string, number>();
+
+    if (keys.length === 0) return result;
+
+    const exists = await this.redisClient.exists(redisKey);
+    if (exists === 0) {
+      consola.warn(`Redis中未找到历史密钥使用计数: ${redisKey}`);
+      return result;
+    }
+
+    const counts = await this.redisClient.hmGet(redisKey, keys);
+
+    keys.forEach((key, index) => {
+      const count = counts[index];
+      if (count !== null) result.set(key, parseInt(count));
+    });
+
+    return result;
+  }
+
+  /**
+   * 更新Redis中的密钥使用计数
+   */
+  public async updateKeyCount(
+    redisKey: string,
+    key: string,
+    count: number,
+  ): Promise<void> {
+    try {
+      await this.redisClient.hSet(redisKey, key, count.toString());
+      consola.info(`Redis密钥使用计数更新成功: ${maskAPIKey(key)} = ${count}`);
+    } catch (error) {
+      consola.error(
+        `更新Redis密钥使用计数失败: ${maskAPIKey(key)} = ${count} - ${
+          (error as Error).message
+        }`,
+      );
+    }
+  }
+
+  /**
+   * 关闭Redis连接
+   */
+  public async close(): Promise<void> {
+    await this.redisClient.quit();
+    consola.info('Redis连接已关闭');
+  }
 }
 
 /**
  * 带有Redis支持的Gemini API密钥管理器
- * 从Redis读取和保存密钥使用计数
  */
 export class KeyManagerWithRedis extends KeyManager {
-  private REDIS_KEY: string = 'gemini:keyUsageCount';
+  private redisManager: RedisManager;
+  private readonly REDIS_KEY: string = 'gemini:keyUsageCount';
   public ready: Promise<void>;
 
-  private redisClient: ReturnType<typeof createClient>;
-
-  constructor() {
+  constructor(redisUrl?: string) {
     super();
-    if (!Bun.env.REDIS_URL) {
-      consola.warn('REDIS_URL 环境变量未配置');
-    }
-    this.redisClient = createClient({ url: Bun.env.REDIS_URL });
-    this.redisClient.on('error', (error) => {
-      consola.error(
-        `Redis连接中断(${Bun.env.REDIS_URL}): ${(error as Error).message}`,
-      );
-    });
-    this.ready = this.initializeKeyUsageCount();
+    this.redisManager = new RedisManager(redisUrl);
+    this.ready = this.initializeKeyUsageCount().catch((error) =>
+      consola.error(`初始化Redis密钥使用计数失败: ${(error as Error).message}`),
+    );
   }
 
   /**
-   * 从Redis获取使用计数
+   * 从Redis初始化密钥使用计数
    */
   private async initializeKeyUsageCount(): Promise<void> {
-    await this.redisClient.connect();
+    // 等待Redis连接就绪
+    await this.redisManager.ready;
 
-    const exists = await this.redisClient.exists(this.REDIS_KEY);
+    // 获取所有API密钥
+    const keys = this.getApiKeys();
 
-    if (exists === 0) {
-      consola.warn(`Redis中未找到历史密钥使用计数(${Bun.env.REDIS_URL})`);
-      return;
-    }
+    // 从Redis加载密钥使用计数
+    const counts = await this.redisManager.loadKeyCounts(this.REDIS_KEY, keys);
 
-    const keys = this.apiKeys;
-    if (keys.length) {
-      let executionCount = 0;
-      const counts = await this.redisClient.hmGet(this.REDIS_KEY, keys);
+    // 更新内存中的使用计数
+    counts.forEach((count, key) => {
+      this.updateKeyUsage(key, count);
+    });
 
-      keys.forEach((key, index) => {
-        const count = counts[index];
-        if (count === null) return;
-
-        executionCount++;
-        this.keyUsageCount.set(key, parseInt(count));
-      });
-      consola.success(
-        `从Redis加载了${executionCount}个密钥的历史使用计数(${Bun.env.REDIS_URL})`,
-      );
-    }
+    const totalUsage = Array.from(this.keyUsageCount.values()).reduce((sum, count) => sum + count, 0);
+    consola.success(`Redis密钥使用计数初始化完成，总使用次数: ${totalUsage}`);
   }
 
   /**
@@ -159,23 +247,28 @@ export class KeyManagerWithRedis extends KeyManager {
   public getNextApiKey(): string {
     const selectedKey = super.getNextApiKey();
 
-    // 更新Redis中的使用计数（非阻塞方式）
-    const currentCount = this.keyUsageCount.get(selectedKey)!;
-    this.redisClient
-      .hSet(this.REDIS_KEY, selectedKey, currentCount.toString())
-      .then(() => {
-        consola.success(
-          `更新Redis密钥使用计数成功: ${maskAPIKey(selectedKey)}`,
-          currentCount,
-        );
-      })
-      .catch((error) => {
-        consola.error(`更新Redis密钥使用计数失败: ${(error as Error).message}`);
-      });
+    // 获取当前使用次数
+    const currentCount = this.getKeyUsageCount(selectedKey);
 
+    // 更新Redis中的使用计数（非阻塞方式）
+    this.redisManager.updateKeyCount(this.REDIS_KEY, selectedKey, currentCount);
     return selectedKey;
   }
 }
 
-// 导出单例实例
-export const keyManager = new KeyManagerWithRedis();
+/**
+ * 创建密钥管理器的工厂函数
+ */
+export function createKeyManager(): KeyManager {
+  const redisUrl = Bun.env.REDIS_URL;
+
+  if (redisUrl && redisUrl.trim()) {
+    consola.info('检测到REDIS_URL配置，使用Redis支持的密钥管理器');
+    return new KeyManagerWithRedis(redisUrl);
+  } else {
+    consola.info('未检测到REDIS_URL配置，使用基础密钥管理器');
+    return new KeyManager();
+  }
+}
+
+export const keyManager = createKeyManager();
