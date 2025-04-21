@@ -78,6 +78,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 🐳 构建并推送 Docker 镜像
+        id: build-push
         uses: yanhao98/composite-actions/docker-build-push@main
         with:
           file: ./Dockerfile
@@ -107,7 +108,7 @@ jobs:
           HF_SPACENAME: ${{ vars.HF_SPACENAME }}
         run: |
           cat <<EOF > Dockerfile
-          FROM ghcr.io/${{ steps.lowercase-repo-name.outputs.IMAGE_NAME }}:main
+          FROM ghcr.io/${{ steps.lowercase-repo-name.outputs.IMAGE_NAME }}:main@${{ needs.build-and-push-ghcr.outputs.imageid }}
           EOF
 
           cat <<EOF > README.md
