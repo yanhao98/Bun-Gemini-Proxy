@@ -4,12 +4,6 @@ import prettyMs from 'pretty-ms';
 import type { PropsWithChildren } from '@kitajs/html';
 import { maskAPIKey } from '../utils';
 import { toIIFEString } from './utils';
-import OpenAI from 'openai';
-
-const openai = new OpenAI({
-  apiKey: Bun.env.AUTH_KEY,
-  baseURL: 'http://localhost:7860/v1beta/openai/',
-});
 
 interface Props {
   pendingRequests: Server['pendingRequests'];
@@ -17,26 +11,11 @@ interface Props {
   keyCount: number;
 }
 
-export async function MainPage({
+export function MainPage({
   pendingRequests,
   keyUsageStats,
   keyCount,
 }: PropsWithChildren<Props>) {
-  const randomSeed = Math.random().toString(36).substring(7); // Generate a short random string
-  const completion = await openai.chat.completions.create({
-    model: 'gemini-2.5-flash-preview-04-17', // Or whichever model you are actually using
-    messages: [
-      { role: 'system', content: 'You are a helpful assistant.' },
-      {
-        role: 'user',
-        content: `给我一个随机冷知识。为了确保随机性，请参考这个词：${randomSeed}。(不要输出多余的信息，直接给冷知识)`,
-      },
-    ],
-    stream: false,
-    temperature: 1.2, // 尝试增加温度值
-  });
-  const content = completion.choices[0].message.content;
-
   function handleClick() {
     window.location.reload();
   }
@@ -67,15 +46,6 @@ export async function MainPage({
         </div>
 
         <div class="space-y-4 mt-6">
-          {/* 冷知识展示 */}
-          <div class="bg-yellow-50 dark:bg-yellow-900 p-4 rounded-md my-4">
-            <span class="text-yellow-800 dark:text-yellow-200 font-medium">
-              冷知识：
-            </span>
-            <span class="text-yellow-900 dark:text-yellow-100 ml-2">
-              {content}
-            </span>
-          </div>
           <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-md ">
             <span class="text-gray-600 dark:text-gray-300 font-medium">
               运行时间
