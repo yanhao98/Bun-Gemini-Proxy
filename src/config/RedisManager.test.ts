@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, spyOn } from 'bun:test';
 import { consola, LogLevels } from 'consola';
-import { KeyManager } from './keys';
+import { KeyManager } from './KeyManager';
 
 describe('KeyManager', () => {
   // 存储原始环境变量

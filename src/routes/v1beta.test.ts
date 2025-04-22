@@ -1,9 +1,9 @@
-import OpenAI from 'openai';
 import { treaty } from '@elysiajs/eden';
-import { beforeAll, describe, expect, it as ittt, spyOn } from 'bun:test';
-import Elysia from 'elysia';
-import { v1betaRoutes } from './v1beta';
 import { GoogleGenAI } from '@google/genai';
+import { describe, expect, it as ittt, spyOn } from 'bun:test';
+import Elysia from 'elysia';
+import OpenAI from 'openai';
+import { v1betaRoutes } from './v1beta';
 
 let q = '';
 q = '‘莎士比亚’是几个字？';

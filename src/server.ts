@@ -7,7 +7,8 @@ import Elysia from 'elysia';
 import { errorHandler } from './plugins/error-handler';
 import { mainRoutes } from './routes/main';
 import { v1betaRoutes } from './routes/v1beta';
-import { keyManager, KeyManagerWithRedis } from './config/keys';
+import { keyManager } from './config/keys';
+import { KeyManagerWithRedis } from './config/KeyManagerWithRedis';
 
 consola.info(`🦊 进程启动耗时: ${process.uptime() * 1000} 毫秒`);
 const t1 = performance.now();
