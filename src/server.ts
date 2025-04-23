@@ -14,11 +14,17 @@ consola.info(`🦊 进程启动耗时: ${process.uptime() * 1000} 毫秒`);
 const t1 = performance.now();
 
 if (keyManager instanceof KeyManagerWithRedis) {
+  let redisReady = false;
   process.on('SIGTERM', async () => {
     console.log('接收到 SIGTERM 信号，正在优雅地关闭Redis连接...');
+    if (!redisReady) {
+      console.log('Redis连接尚未准备好，直接退出进程...');
+      process.exit(0);
+    }
     await (keyManager as KeyManagerWithRedis).redisManager.close();
   });
   await keyManager.ready;
+  redisReady = true;
 }
 
 export const app = new Elysia()
