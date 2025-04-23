@@ -1,25 +1,26 @@
 import { consola } from 'consola';
-import { createClient } from 'redis';
+import { createClient, type RedisClientType } from 'redis';
 import { maskAPIKey } from '../utils';
 
+// const redisKeyPrefix = ...
+const REDIS_KEY = 'gemini:keyUsageCount';
 /**
  * Redis客户端管理器
  * 负责Redis连接和操作的封装
  */
 export class RedisManager {
-  private redisClient: ReturnType<typeof createClient>;
+  private redisClient: RedisClientType;
   public ready: Promise<true>;
 
-  constructor(private redisUrl: string = Bun.env.REDIS_URL || '') {
-    if (!this.redisUrl) {
-      consola.warn('REDIS_URL 未配置，请检查环境变量');
+  constructor() {
+    const REDIS_URL = Bun.env.REDIS_URL;
+    if (!REDIS_URL) {
+      throw new Error('REDIS_URL 未配置');
     }
 
-    this.redisClient = createClient({ url: this.redisUrl });
+    this.redisClient = createClient({ url: REDIS_URL });
     this.redisClient.on('error', (error) => {
-      consola.error(
-        `Redis连接中断(${this.redisUrl}): ${(error as Error).message}`,
-      );
+      consola.error(`Redis连接中断(${REDIS_URL}): ${(error as Error).message}`);
     });
 
     this.ready = this.connect();
@@ -37,21 +38,18 @@ export class RedisManager {
   /**
    * 从Redis加载密钥使用计数
    */
-  public async loadKeyCounts(
-    redisKey: string,
-    keys: string[],
-  ): Promise<Map<string, number>> {
+  public async loadKeyCounts(keys: string[]): Promise<Map<string, number>> {
     const result = new Map<string, number>();
 
     if (keys.length === 0) return result;
 
-    const exists = await this.redisClient.exists(redisKey);
+    const exists = await this.redisClient.exists(REDIS_KEY);
     if (exists === 0) {
-      consola.warn(`Redis中未找到历史密钥使用计数: ${redisKey}`);
+      consola.warn(`Redis中未找到历史密钥使用计数: ${REDIS_KEY}`);
       return result;
     }
 
-    const counts = await this.redisClient.hmGet(redisKey, keys);
+    const counts = await this.redisClient.hmGet(REDIS_KEY, keys);
 
     keys.forEach((key, index) => {
       const count = counts[index];
@@ -64,13 +62,9 @@ export class RedisManager {
   /**
    * 更新Redis中的密钥使用计数
    */
-  public async updateKeyCount(
-    redisKey: string,
-    key: string,
-    count: number,
-  ): Promise<void> {
+  public async updateKeyCount(key: string, count: number): Promise<void> {
     try {
-      await this.redisClient.hSet(redisKey, key, count.toString());
+      await this.redisClient.hSet(REDIS_KEY, key, count.toString());
       consola.info(`Redis密钥使用计数更新成功: ${maskAPIKey(key)} = ${count}`);
     } catch (error) {
       consola.error(

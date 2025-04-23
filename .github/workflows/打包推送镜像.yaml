@@ -49,6 +49,9 @@ jobs:
       - name: 🔍 代码检查
         run: bun run lint
 
+      - name: 🔎 类型检查
+        run: bun run typecheck
+
       - name: 🧪 测试
         run: bun test --coverage
 

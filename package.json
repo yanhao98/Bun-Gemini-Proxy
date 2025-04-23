@@ -1,9 +1,10 @@
 {
   "scripts": {
     "dev": "bun run --watch src/server.ts",
-    "all": "bunx npm-run-all2 --parallel lint format test",
+    "all": "bunx npm-run-all2 --parallel lint format test typecheck",
     "test": "bun test",
     "lint": "bunx oxlint --fix",
+    "typecheck": "tsc --noEmit",
     "format": "bunx prettier --write ."
   },
   "dependencies": {

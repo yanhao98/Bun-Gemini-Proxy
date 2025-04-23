@@ -1,4 +1,4 @@
-import { RpcStatus } from '@google/generative-ai/server';
+import type { RpcStatus } from '@google/generative-ai/server';
 
 /**
  * 对 API Key 进行掩码处理，保留前4位和后4位，中间用 **** 替换

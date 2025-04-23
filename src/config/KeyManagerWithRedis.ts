@@ -7,12 +7,11 @@ import { RedisManager } from './RedisManager';
  */
 export class KeyManagerWithRedis extends KeyManager {
   private redisManager: RedisManager;
-  private readonly REDIS_KEY: string = 'gemini:keyUsageCount';
   public ready: Promise<void>;
 
-  constructor(redisUrl?: string) {
+  constructor() {
     super();
-    this.redisManager = new RedisManager(redisUrl);
+    this.redisManager = new RedisManager();
     this.ready = this.initializeKeyUsageCount().catch((error) =>
       consola.error(`初始化Redis密钥使用计数失败: ${(error as Error).message}`),
     );
@@ -29,7 +28,7 @@ export class KeyManagerWithRedis extends KeyManager {
     const keys = this.getApiKeys();
 
     // 从Redis加载密钥使用计数
-    const counts = await this.redisManager.loadKeyCounts(this.REDIS_KEY, keys);
+    const counts = await this.redisManager.loadKeyCounts(keys);
 
     // 更新内存中的使用计数
     counts.forEach((count, key) => {
@@ -53,7 +52,7 @@ export class KeyManagerWithRedis extends KeyManager {
     const currentCount = this.getKeyUsageCount(selectedKey);
 
     // 更新Redis中的使用计数（非阻塞方式）
-    this.redisManager.updateKeyCount(this.REDIS_KEY, selectedKey, currentCount);
+    this.redisManager.updateKeyCount(selectedKey, currentCount);
     return selectedKey;
   }
 }

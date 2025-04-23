@@ -10,7 +10,7 @@ export function createKeyManager(): KeyManager {
 
   if (redisUrl && redisUrl.trim()) {
     consola.info('检测到REDIS_URL配置，使用Redis支持的密钥管理器');
-    return new KeyManagerWithRedis(redisUrl);
+    return new KeyManagerWithRedis();
   } else {
     consola.info('未检测到REDIS_URL配置，使用基础密钥管理器');
     return new KeyManager();
