@@ -25,7 +25,7 @@ jobs:
 
     steps:
       - name: 🐳 Docker 容器信息
-        run: >
+        run: |-
           echo "job.services.redis.ports: ${{ job.services.redis.ports }}"
           echo "job.services.redis.id: ${{ job.services.redis.id }}"
 
