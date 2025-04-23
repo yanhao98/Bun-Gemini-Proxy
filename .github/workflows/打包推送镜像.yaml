@@ -15,8 +15,20 @@ jobs:
   test:
     name: 构建代码，代码检查和测试代码
     runs-on: ubuntu-latest
+    services:
+      redis:
+        image: redis:latest
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping" --health-interval 10s --health-timeout 5s --health-retries 3
 
     steps:
+      - name: 🐳 Docker 容器信息
+        run: >
+          echo "job.services.redis.ports: ${{ job.services.redis.ports }}"
+          echo "job.services.redis.id: ${{ job.services.redis.id }}"
+
       - name: 📥 检出代码
         uses: actions/checkout@v4
 
