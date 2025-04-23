@@ -8,7 +8,7 @@ import { maskAPIKey } from '../utils';
  */
 export class RedisManager {
   private redisClient: ReturnType<typeof createClient>;
-  public ready: Promise<void>;
+  public ready: Promise<true>;
 
   constructor(private redisUrl: string = Bun.env.REDIS_URL || '') {
     if (!this.redisUrl) {
@@ -28,9 +28,10 @@ export class RedisManager {
   /**
    * 连接到Redis服务器
    */
-  private async connect(): Promise<void> {
+  private async connect(): Promise<true> {
     await this.redisClient.connect();
     consola.success('Redis连接成功');
+    return true;
   }
 
   /**
