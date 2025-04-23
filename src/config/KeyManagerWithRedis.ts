@@ -6,7 +6,7 @@ import { RedisManager } from './RedisManager';
  * 带有Redis支持的Gemini API密钥管理器
  */
 export class KeyManagerWithRedis extends KeyManager {
-  private redisManager: RedisManager;
+  public redisManager: RedisManager; // TODO: 等 RedisManager 变成全局的。
   public ready: Promise<void>;
 
   constructor() {

@@ -9,3 +9,14 @@ services:
       GEMINI_API_KEYS: |
         skkkey1,skkkey2,
         skkkey3,skkkey4
+      REDIS_URL: redis://redis:6379/0
+    depends_on:
+      redis:
+        condition: service_healthy
+  redis:
+    image: redis:latest
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 3s
+      retries: 3

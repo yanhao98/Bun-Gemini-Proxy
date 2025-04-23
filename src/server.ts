@@ -13,7 +13,13 @@ import { KeyManagerWithRedis } from './config/KeyManagerWithRedis';
 consola.info(`🦊 进程启动耗时: ${process.uptime() * 1000} 毫秒`);
 const t1 = performance.now();
 
-if (keyManager instanceof KeyManagerWithRedis) await keyManager.ready;
+if (keyManager instanceof KeyManagerWithRedis) {
+  process.on('SIGTERM', async () => {
+    console.log('接收到 SIGTERM 信号，正在优雅地关闭Redis连接...');
+    await (keyManager as KeyManagerWithRedis).redisManager.close();
+  });
+  await keyManager.ready;
+}
 
 export const app = new Elysia()
   // .use((await import('./plugins/trace')).trace.as('global'))
@@ -33,6 +39,10 @@ consola.success(`🦊 Gemini 代理服务启动成功! 运行于 ${app.server?.u
 consola.success(`🦊 服务启动耗时: ${performance.now() - t1} 毫秒`);
 
 process.on('SIGTERM', async () => {
-  console.log('SIGTERM received, shutting down gracefully...');
-  await app.stop(/* closeActiveConnections */ true);
+  console.log('接收到 SIGTERM 信号，正在优雅地关闭服务器...');
+
+  const closeActiveConnections = true;
+  await app.stop(closeActiveConnections);
+
+  process.exit(0);
 });
