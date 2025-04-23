@@ -23,6 +23,7 @@ if (keyManager instanceof KeyManagerWithRedis) {
     }
     await (keyManager as KeyManagerWithRedis).redisManager.close();
   });
+
   await keyManager.ready;
   redisReady = true;
 }
