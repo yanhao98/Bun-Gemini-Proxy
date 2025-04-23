@@ -21,7 +21,7 @@
     "elysia-compress": "^1.2.1",
     "elysia-requestid": "1.0.9",
     "ioredis": "^5.6.1",
-    "openai": "^4.95.1",
+    "openai": "^4.96.0",
     "pretty-ms": "^9.2.0",
     "redis": "^4.7.0",
     "zod": "^3.24.3"
