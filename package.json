@@ -1,15 +1,37 @@
 {
-  "name": "app",
-  "version": "1.0.50",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "bun run --watch src/index.ts"
+    "dev": "bun run --watch src/server.ts",
+    "all": "bunx npm-run-all2 --parallel lint format test typecheck",
+    "test": "bun test --coverage",
+    "lint": "bunx oxlint --fix",
+    "typecheck": "tsc --noEmit",
+    "format": "bunx prettier --write ."
   },
   "dependencies": {
-    "elysia": "latest"
+    "@adobe/fetch": "^4.2.0",
+    "@elysiajs/bearer": "^1.2.0",
+    "@elysiajs/cors": "^1.2.0",
+    "@elysiajs/eden": "^1.2.0",
+    "@elysiajs/html": "^1.2.0",
+    "@elysiajs/server-timing": "^1.2.1",
+    "@elysiajs/swagger": "^1.2.2",
+    "@kitajs/ts-html-plugin": "^4.1.1",
+    "@labzzhq/compressor": "^1.1.1",
+    "consola": "^3.4.2",
+    "dayjs": "^1.11.13",
+    "elysia": "^1.2.25",
+    "elysia-compress": "^1.2.1",
+    "elysia-requestid": "1.0.9",
+    "ioredis": "^5.6.1",
+    "openai": "^4.96.0",
+    "pretty-ms": "^9.2.0",
+    "redis": "^4.7.0",
+    "zod": "^3.24.3"
   },
   "devDependencies": {
-    "bun-types": "latest"
+    "@google/genai": "^0.10.0",
+    "@google/generative-ai": "^0.24.0",
+    "bun-types": "^1.2.10"
   },
   "module": "src/index.js"
 }

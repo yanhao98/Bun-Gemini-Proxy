@@ -1,0 +1,7 @@
+{
+  "$schema": "https://testingcf.jsdelivr.net/npm/oxlint/configuration_schema.json",
+  "rules": {
+    "react/jsx-key": "off",
+    "unicorn/no-invalid-fetch-options": "off"
+  }
+}
