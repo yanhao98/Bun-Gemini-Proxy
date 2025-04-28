@@ -9,6 +9,7 @@
     "strict": true,
     "skipLibCheck": true,
     "verbatimModuleSyntax": true,
+    "resolveJsonModule": true,
     // >>> jsx >>>
     // https://github.com/kitajs/html/issues/150
     "jsx": "react-jsx",

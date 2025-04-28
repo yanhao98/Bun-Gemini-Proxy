@@ -10,23 +10,13 @@ function formatDateTime(): string {
 type LogCtx = {
   requestID: string | number;
   begin?: number;
-  [key: string]: unknown;
 };
 
-export function createLogger() {
-  return function log(ctx: LogCtx, ...args: unknown[]): void {
-    console.debug(
-      `[${formatDateTime()}]`,
-      `📝 [${ctx.requestID}]`,
-      ctx.begin
-        ? `[${(performance.now() - ctx.begin).toFixed(3)}ms]`
-        : undefined,
-      ...args,
-    );
-  };
+export function log(ctx: LogCtx, ...args: unknown[]): void {
+  console.debug(
+    `[${formatDateTime()}]`,
+    `📝 [${ctx.requestID}]`,
+    ctx.begin ? `[${(performance.now() - ctx.begin).toFixed(3)}ms]` : undefined,
+    ...args,
+  );
 }
-
-/**
- * 默认logger实例
- */
-export const perfLog = createLogger();

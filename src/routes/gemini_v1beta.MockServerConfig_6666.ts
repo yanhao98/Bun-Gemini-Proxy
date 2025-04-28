@@ -1,3 +1,5 @@
+import modelsJson from '../_gemoni-json/models.json';
+const encoder = new TextEncoder();
 const mockHeaders = {
   // 'Content-Type': 'text/event-stream; charset=utf-8',
   'Cache-Control': 'no-cache',
@@ -79,6 +81,17 @@ export const geminiStreamMockServerConfig_6666: Bun.ServeFunctionOptions<
 
     // /v1beta
     if (req.url.includes('/v1beta')) {
+      if (new URL(req.url).pathname === '/v1beta/models') {
+        /* 
+        curl --location 'https://generativelanguage.googleapis.com/v1beta/models' \
+        --header 'Accept-Encoding: deflate' \
+        --header 'x-goog-api-key: hh'
+        */
+        console.debug(`🎭 模拟 Gemini 列出模型`);
+        return new Response(JSON.stringify(modelsJson), {
+          headers: mockHeadersJson,
+        });
+      }
       // OpenAI检索模型
       if (req.url.includes('/openai/models/gemini')) {
         console.debug(`🎭 模拟 OpenAI 检索模型`);
@@ -131,7 +144,7 @@ export const geminiStreamMockServerConfig_6666: Bun.ServeFunctionOptions<
 
               const message = 'data: ' + JSON.stringify(item) + '\n\n';
               console.debug('🎭 模拟服务器发送数据:', message);
-              controller.enqueue(new TextEncoder().encode(message));
+              controller.enqueue(encoder.encode(message));
               await Bun.sleep(100);
             }
             controller.close();
@@ -166,12 +179,11 @@ export const geminiStreamMockServerConfig_6666: Bun.ServeFunctionOptions<
               }
               const message = 'data: ' + JSON.stringify(item) + '\n\n';
               console.debug('🎭 模拟服务器发送数据:', message);
-              controller.enqueue(new TextEncoder().encode(message));
+              controller.enqueue(encoder.encode(message));
               await Bun.sleep(100);
             }
-            controller.enqueue(
-              new TextEncoder().encode(`data: [DONE]` + '\n\n'),
-            );
+            console.debug(`🎭 模拟服务器发送数据: [DONE]` + '\n\n');
+            controller.enqueue(encoder.encode(`data: [DONE]` + '\n\n'));
             await Bun.sleep(100);
 
             controller.close();

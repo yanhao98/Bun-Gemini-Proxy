@@ -2,21 +2,14 @@ import { Elysia } from 'elysia';
 
 import { createGeminiError } from '../utils';
 import { GEMINI_API_HEADER_NAME } from '../utils/const';
-import { perfLog } from '../utils/logger';
+import { log } from '../utils/logger';
+import { beginPlugin } from './begin-plugin';
 
 export const auth = new Elysia({ name: '@h/auth' })
+  .use(beginPlugin)
   .use((await import('elysia-requestid')).requestID().as('plugin'))
   // .use((await import('@elysiajs/bearer')).bearer())
   .onBeforeHandle((ctx) => {
-    perfLog(ctx, `[🔑] [认证]`, ctx.path);
-    // console.debug(`headers: `, ctx.request.headers);
-    // console.debug(
-    //   `headers: ${JSON.stringify({
-    //     headers: ctx.request.headers,
-    //     query: ctx.query,
-    //   })}`,
-    // );
-
     const authorization = ctx.request.headers.get('Authorization');
 
     const authKey =
@@ -24,11 +17,11 @@ export const auth = new Elysia({ name: '@h/auth' })
       new URLSearchParams(ctx.query).get('key') ??
       (authorization?.startsWith('Bearer ') ? authorization?.slice(7) : null);
 
-    // if (!authKey || authKey !== Bun.env.AUTH_KEY) {
-    //   console.debug(`headers: `, ctx.request.headers);
-    // }
-
     if (!authKey) {
+      log(
+        { requestID: ctx.requestID, begin: ctx.begin },
+        `⚠️ [认证] 未提供API密钥`,
+      );
       return ctx.error(
         401,
         createGeminiError(401, '未提供有效的API密钥，请检查请求头'),
@@ -36,10 +29,18 @@ export const auth = new Elysia({ name: '@h/auth' })
     }
 
     if (authKey !== Bun.env.AUTH_KEY) {
+      log(
+        { requestID: ctx.requestID, begin: ctx.begin },
+        `❌ [认证] 提供的API密钥无效`,
+      );
       return ctx.error(
         403,
         createGeminiError(403, '提供的API密钥无效，请检查密钥是否正确'),
       );
     }
+    log(
+      { requestID: ctx.requestID, begin: ctx.begin },
+      `✅ [认证] API密钥验证成功`,
+    );
   })
   .as('plugin');

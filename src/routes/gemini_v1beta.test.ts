@@ -1,10 +1,19 @@
 import { GoogleGenAI } from '@google/genai';
-import { afterEach, beforeAll, describe, expect, it } from 'bun:test';
+import {
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+} from 'bun:test';
 import { consola, LogLevels } from 'consola';
 import OpenAI from 'openai';
 import { keyManager } from '../config/keys';
 import { gemini_v1betaRoutes } from './gemini_v1beta';
 import { geminiStreamMockServerConfig_6666 } from './gemini_v1beta.MockServerConfig_6666';
+import { treaty } from '@elysiajs/eden';
+import { GEMINI_API_HEADER_NAME } from '../utils/const';
 consola.level = LogLevels.verbose;
 
 Bun.serve(geminiStreamMockServerConfig_6666);
@@ -110,5 +119,26 @@ describe('GoogleGenAI', () => {
     expect(count).toBeGreaterThan(0);
     expect(text).toContain('MOCK_DONE');
     console.debug(`text :>> `, text);
+  });
+});
+
+describe('Gemini treaty', () => {
+  beforeEach(() => {
+    Bun.env.AUTH_KEY = 'test-auth-key';
+  });
+
+  it('Gemini treaty', async () => {
+    const { error, data } = await treaty(gemini_v1betaRoutes).v1beta.models.get(
+      {
+        headers: {
+          [GEMINI_API_HEADER_NAME]: Bun.env.AUTH_KEY,
+        },
+      },
+    );
+    expect(error).toBeNull();
+    expect(data).toBeDefined();
+    const models = (data as any).models as Record<string, any>[];
+    expect(models.length).toBeGreaterThan(0);
+    expect(JSON.stringify(models)).not.toContain('deprecated');
   });
 });

@@ -1,13 +1,9 @@
 // eslint-disable no-invalid-fetch-options
-import { dns } from 'bun';
 import type { Context, SingletonBase } from 'elysia';
 import { keyManager } from '../config/keys';
 import { GEMINI_API_HEADER_NAME } from './const';
 import { maskAPIKey } from './index';
-import { perfLog } from './logger';
-
-if (Bun.env.GEMINI_BASE_URL /* 测试用例可能没这个环境变量 */)
-  dns.prefetch(new URL(Bun.env.GEMINI_BASE_URL).hostname);
+import { log } from './logger';
 
 type RequestContextWithID = Context<
   {},
@@ -19,20 +15,20 @@ type RequestContextWithID = Context<
  */
 export async function handleGeminiApiRequest(ctx: RequestContextWithID) {
   ctx.request.signal!.addEventListener('abort', () => {
-    perfLog(
+    log(
       { requestID: ctx.requestID, begin: ctx.begin },
       `[请求取消] 请求已取消`,
     );
   });
 
   const xGoogApiKey = keyManager.getNextApiKey();
-  perfLog(
+  log(
     { requestID: ctx.requestID, begin: ctx.begin },
     `[密钥分配] API密钥已分配: ${maskAPIKey(xGoogApiKey)}`,
   );
   const targetUrl = buildRequestUrl(ctx);
 
-  perfLog(
+  log(
     { requestID: ctx.requestID, begin: ctx.begin },
     `[请求转发] 转发至Gemini API: ${targetUrl}`,
   );
@@ -43,10 +39,10 @@ export async function handleGeminiApiRequest(ctx: RequestContextWithID) {
     signal: ctx.request.signal,
     verbose: !true,
   });
-  perfLog(
+  log(
     { requestID: ctx.requestID, begin: ctx.begin },
     `[响应接收] Gemini API返回状态码: ${resp.status}`,
-    ` 内容类型: ${resp.headers.get('content-type')}`,
+    `内容类型: ${resp.headers.get('content-type')}`,
     ...(resp.ok ? [`✅`] : [`❌`, await resp.clone().text()]),
   );
 
@@ -60,11 +56,9 @@ export async function handleGeminiApiRequest(ctx: RequestContextWithID) {
     return new Response('无法获取响应流', { status: 502 });
   }
 
-  const isStream = resp.headers
-    .get('content-type')
-    ?.includes('text/event-stream');
   // 处理非流式响应
-  if (!isStream) return resp;
+  if (!resp.headers.get('content-type')?.includes('text/event-stream'))
+    return resp;
 
   return createProperStreamResponse(
     { begin: ctx.begin, requestID: ctx.requestID },
@@ -81,7 +75,7 @@ function createProperStreamResponse(
   // 创建转换流，实现零拷贝传递
   const transformStream = new TransformStream({
     start(_controller) {
-      perfLog(
+      log(
         { begin: ctx.begin, requestID: ctx.requestID },
         `[流处理] 开始零拷贝流处理`,
       );
@@ -90,13 +84,13 @@ function createProperStreamResponse(
       // 直接传递数据块，不进行额外的复制或缓冲
       controller.enqueue(chunk);
 
-      perfLog(
+      log(
         { requestID: ctx.requestID, begin: ctx.begin },
         `[数据流传输] 零拷贝传输数据分片，长度: ${chunk?.byteLength || 0} 字节`,
       );
     },
     flush(_controller) {
-      perfLog(
+      log(
         { begin: ctx.begin, requestID: ctx.requestID },
         `[流处理] 零拷贝流处理完成`,
       );
