@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'bun:test';
-import { mainRoutes } from './main';
+import { mainRoutes } from './_main';
 
 describe('主路由', () => {
   describe('GET /favicon.ico', () => {

@@ -3,18 +3,18 @@ import { afterEach, beforeAll, describe, expect, it } from 'bun:test';
 import { consola, LogLevels } from 'consola';
 import OpenAI from 'openai';
 import { keyManager } from '../config/keys';
-import { v1betaRoutes } from './v1beta';
-import { geminiStreamMockServerConfig_6666 } from './v1beta.MockServerConfig_6666';
+import { gemini_v1betaRoutes } from './gemini_v1beta';
+import { geminiStreamMockServerConfig_6666 } from './gemini_v1beta.MockServerConfig_6666';
 consola.level = LogLevels.verbose;
 
 Bun.serve(geminiStreamMockServerConfig_6666);
 
 beforeAll(async () => {
-  Bun.env.GEMINI_BASE_URL = 'http://localhost:6666/v1beta';
+  Bun.env.GEMINI_BASE_URL = 'http://localhost:6666';
   Bun.env.AUTH_KEY = 'test-auth-key';
   Bun.env.GEMINI_API_KEYS = 'test-api-key-1,test-api-key-2,';
   keyManager.loadApiKeys();
-  v1betaRoutes.listen({ port: 7777 });
+  gemini_v1betaRoutes.listen({ port: 7777 });
 });
 
 afterEach(async () => {
@@ -56,13 +56,13 @@ describe('OpenAI 兼容', () => {
       stream: true,
     });
 
-    let count = 0;
+    let chunk_counter = 0;
     let text = '';
     for await (const chunk of completion) {
       text += chunk.choices[0].delta.content;
-      count++;
+      chunk_counter++;
     }
-    expect(count).toBeGreaterThan(0);
+    expect(chunk_counter).toBeGreaterThan(0);
     expect(text).toContain('MOCK_DONE');
     console.debug(`text :>> `, text);
   });

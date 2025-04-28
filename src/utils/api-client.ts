@@ -18,8 +18,6 @@ type RequestContextWithID = Context<
  * 向 Gemini API 发送请求的通用客户端
  */
 export async function handleGeminiApiRequest(ctx: RequestContextWithID) {
-  // TODO: GEMINI_BASE_URL 不要 /v1beta
-  const path = ctx.path.replace('/v1beta', '');
   ctx.request.signal!.addEventListener('abort', () => {
     perfLog(
       { requestID: ctx.requestID, begin: ctx.begin },
@@ -40,7 +38,7 @@ export async function handleGeminiApiRequest(ctx: RequestContextWithID) {
   );
   const resp = await fetch(targetUrl, {
     method: ctx.request.method,
-    headers: buildRequestHeaders(path, xGoogApiKey),
+    headers: buildRequestHeaders(ctx, xGoogApiKey),
     body: ctx.request.body,
     signal: ctx.request.signal,
     verbose: !true,
@@ -122,14 +120,15 @@ function createProperStreamResponse(
   });
 }
 
-function buildRequestHeaders(path: string, xGoogApiKey: string) {
+function buildRequestHeaders(ctx: RequestContextWithID, xGoogApiKey: string) {
+  const path = ctx.path;
   const headers = new Headers({
     'Cache-Control': 'no-cache',
     Connection: 'keep-alive',
   });
 
   // 根据路径选择正确的认证头
-  if (path.startsWith('/openai')) {
+  if (path.startsWith('/v1beta/openai')) {
     headers.set('authorization', `Bearer ${xGoogApiKey}`);
   } else {
     headers.set(GEMINI_API_HEADER_NAME, xGoogApiKey);
@@ -138,7 +137,7 @@ function buildRequestHeaders(path: string, xGoogApiKey: string) {
 }
 
 function buildRequestUrl(ctx: RequestContextWithID) {
-  const path = ctx.path.replace('/v1beta', '');
+  const path = ctx.path;
   let targetUrl = `${Bun.env.GEMINI_BASE_URL}${path}`;
   const searchParams = new URLSearchParams(ctx.query);
   searchParams.delete('key');

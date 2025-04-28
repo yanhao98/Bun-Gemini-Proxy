@@ -15,7 +15,7 @@ const _modelsResponseSchema = z.object({
   ),
 });
 
-export const v1betaRoutes = new Elysia({ prefix: '/v1beta' })
+export const gemini_v1betaRoutes = new Elysia({ prefix: '/v1beta' })
   .use(beginPlugin)
   .use((await import('elysia-requestid')).requestID().as('plugin'))
   .use(auth)
