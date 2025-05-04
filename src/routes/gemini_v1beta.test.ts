@@ -11,12 +11,12 @@ import { consola, LogLevels } from 'consola';
 import OpenAI from 'openai';
 import { keyManager } from '../config/keys';
 import { gemini_v1betaRoutes } from './gemini_v1beta';
-import { geminiStreamMockServerConfig_6666 } from './gemini_v1beta.MockServerConfig_6666';
+import { mockServerConfig_port_6666 } from '../../mocks/gemini_v1beta.MockServerConfig_6666';
 import { treaty } from '@elysiajs/eden';
 import { GEMINI_API_HEADER_NAME } from '../utils/const';
 consola.level = LogLevels.verbose;
 
-Bun.serve(geminiStreamMockServerConfig_6666);
+Bun.serve(mockServerConfig_port_6666);
 
 beforeAll(async () => {
   Bun.env.GEMINI_BASE_URL = 'http://localhost:6666';

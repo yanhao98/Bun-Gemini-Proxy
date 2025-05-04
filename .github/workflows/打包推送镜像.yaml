@@ -108,6 +108,8 @@ jobs:
             # 添加 commit SHA
             VERSION="${VERSION}-${SHORT_SHA}"
           fi
+          # 替换版本中的 / 字符，避免 sed 冲突
+          VERSION=${VERSION//\//-}
           echo "VERSION=$VERSION" >> $GITHUB_ENV
           echo "设置版本: $VERSION"
 

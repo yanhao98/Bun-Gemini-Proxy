@@ -95,7 +95,7 @@ export class RedisManager {
    * 关闭Redis连接
    */
   public async close(): Promise<void> {
-    await this.client.quit();
+    await this.client.close();
     consola.info('Redis连接已关闭');
     RedisManager.instance = null; // 关闭连接后重置实例
   }
