@@ -25,7 +25,7 @@
     "ioredis": "^5.6.1",
     "openai": "^4.96.0",
     "pretty-ms": "^9.2.0",
-    "redis": "^4.7.0",
+    "redis": "^5.0.0",
     "zod": "^3.24.3"
   },
   "devDependencies": {
