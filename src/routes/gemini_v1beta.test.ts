@@ -33,7 +33,7 @@ afterEach(async () => {
 describe('OpenAI 兼容', () => {
   function createOpenAI() {
     return new OpenAI({
-      // apiKey: Bun.env.GEMINI_API_KEY,
+      // apiKey: Bun.env.TEST_GEMINI_API_KEY,
       // baseURL: 'https://generativelanguage.googleapis.com/v1beta/openai/',
       apiKey: Bun.env.AUTH_KEY,
       baseURL: 'http://localhost:7777/v1beta/openai/',
@@ -92,6 +92,8 @@ describe('OpenAI 兼容', () => {
 
 describe('GoogleGenAI', () => {
   const ai = new GoogleGenAI({
+    // apiKey: Bun.env.TEST_GEMINI_API_KEY,
+    // httpOptions: { baseUrl: 'https://generativelanguage.googleapis.com' },
     apiKey: Bun.env.AUTH_KEY,
     httpOptions: { baseUrl: 'http://localhost:7777' },
   });
