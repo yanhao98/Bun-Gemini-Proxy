@@ -12,6 +12,7 @@ curl "http://localhost:7860/v1beta/models/gemini-1.5-flash:streamGenerateContent
 - https://ai.google.dev/gemini-api/docs/rate-limits?hl=zh-cn
 - https://github.com/google-gemini/generative-ai-js
 - https://github.com/googleapis/js-genai
+- https://github.com/PublicAffairs/openai-gemini
 
 ---
 
