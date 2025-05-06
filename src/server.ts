@@ -11,7 +11,6 @@ consola.info(
   }`,
 );
 
-console.time('🔄 Redis连接耗时');
 keyManager.loadApiKeys();
 if (keyManager instanceof KeyManagerWithRedis) {
   let redisReady = false;
@@ -23,10 +22,11 @@ if (keyManager instanceof KeyManagerWithRedis) {
     }
     await (keyManager as KeyManagerWithRedis).redisManager.close();
   });
-
+  
+  console.time('Redis连接初始化耗时');
   await keyManager.ready;
   redisReady = true;
-  console.timeEnd('🔄 Redis连接耗时');
+  console.timeEnd('Redis连接初始化耗时');
 }
 
 app.listen({ port: 7860 /* , idleTimeout: 60 */ /* seconds */ });
