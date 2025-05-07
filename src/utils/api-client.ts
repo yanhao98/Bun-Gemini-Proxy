@@ -47,13 +47,15 @@ export async function handleGeminiApiRequest(ctx: RequestContextWithID) {
   );
 
   if (!resp.ok) {
-    // TODO: build Gemini API 错误响应
-    return new Response(`目标服务器响应错误: ${resp.status}`, { status: 502 });
+    return buildGeminiErrorResponse(
+      `目标服务器响应错误: ${resp.status}`,
+      resp.status,
+      resp.statusText,
+    );
   }
 
   if (!resp.body) {
-    // TODO: build Gemini API 错误响应
-    return new Response('无法获取响应流', { status: 502 });
+    return buildGeminiErrorResponse(`无法获取响应流`, 502, 'Bad Gateway');
   }
 
   // 处理非流式响应
@@ -138,4 +140,20 @@ function buildRequestUrl(ctx: RequestContextWithID) {
   const queryString = searchParams.toString();
   if (queryString) targetUrl += `?${queryString}`;
   return targetUrl;
+}
+
+function buildGeminiErrorResponse(
+  errorMessage: string,
+  errorCode: number,
+  errorStatus: string,
+): Response {
+  const errorJson = {
+    error: {
+      code: errorCode,
+      message: `${errorMessage}`,
+      status: errorStatus,
+    },
+  };
+
+  return new Response(JSON.stringify(errorJson), { status: errorCode });
 }
