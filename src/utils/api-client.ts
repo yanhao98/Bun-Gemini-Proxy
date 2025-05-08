@@ -26,7 +26,20 @@ export async function handleGeminiApiRequest(ctx: RequestContextWithID) {
     { requestID: ctx.requestID, begin: ctx.begin },
     `[密钥分配] API密钥已分配: ${maskAPIKey(xGoogApiKey)}`,
   );
-  const targetUrl = buildRequestUrl(ctx);
+  let targetUrl = buildRequestUrl(ctx);
+  const modelNameMappings = {
+    'gemini-2.5-pro-exp-03-25': 'gemini-2.5-pro-preview-03-25',
+  };
+  // 对URL中的所有可能的模型名称进行映射处理
+  Object.entries(modelNameMappings).forEach(([source, target]) => {
+    if (targetUrl.includes(source)) {
+      targetUrl = targetUrl.replace(source, target);
+      log(
+        { requestID: ctx.requestID, begin: ctx.begin },
+        `[模型映射] 模型名称映射: ${source} => ${target}`,
+      );
+    }
+  });
 
   log(
     { requestID: ctx.requestID, begin: ctx.begin },
