@@ -83,6 +83,24 @@ export function MainPage({
 
           <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-md ">
             <span class="text-gray-600 dark:text-gray-300 font-medium">
+              运行平台
+            </span>
+            <span class="text-gray-800 dark:text-gray-200">
+              {process.platform}
+            </span>
+          </div>
+
+          <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-md ">
+            <span class="text-gray-600 dark:text-gray-300 font-medium">
+              版本
+            </span>
+            <span class="text-gray-800 dark:text-gray-200">
+              {process.env.VERSION || '未指定'}
+            </span>
+          </div>
+
+          <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-md ">
+            <span class="text-gray-600 dark:text-gray-300 font-medium">
               待处理请求
             </span>
             <span class="text-gray-800 dark:text-gray-200">
