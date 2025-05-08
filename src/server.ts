@@ -22,7 +22,7 @@ if (keyManager instanceof KeyManagerWithRedis) {
     }
     await (keyManager as KeyManagerWithRedis).redisManager.close();
   });
-  
+
   console.time('Redis连接初始化耗时');
   await keyManager.ready;
   redisReady = true;
