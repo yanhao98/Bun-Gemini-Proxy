@@ -117,7 +117,7 @@ function createProperStreamResponse(
 }
 
 function buildRequestHeaders(ctx: RequestContextWithID, xGoogApiKey: string) {
-  const path = ctx.path;
+  const path = new URL(ctx.request.url).pathname;
   const headers = new Headers({
     'Cache-Control': 'no-cache',
     Connection: 'keep-alive',
@@ -133,7 +133,8 @@ function buildRequestHeaders(ctx: RequestContextWithID, xGoogApiKey: string) {
 }
 
 function buildRequestUrl(ctx: RequestContextWithID) {
-  const path = ctx.path;
+  const path = new URL(ctx.request.url).pathname;
+
   let targetUrl = `${Bun.env.GEMINI_BASE_URL}${path}`;
   const searchParams = new URLSearchParams(ctx.query);
   searchParams.delete('key');

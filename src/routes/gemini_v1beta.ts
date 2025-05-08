@@ -18,7 +18,7 @@ const modelsDataSchema = z.object({
 
 export const gemini_v1betaRoutes = new Elysia({ prefix: '/v1beta' })
   .use(beginPlugin)
-  .use((await import('elysia-requestid')).requestID().as('plugin'))
+  .use((await import('elysia-requestid')).requestID().as('global'))
   .use(auth)
   .get('/openai/models', handleGeminiApiRequest)
   .get('/openai/models/:model', handleGeminiApiRequest)

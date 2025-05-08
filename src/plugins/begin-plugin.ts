@@ -6,4 +6,4 @@ export const beginPlugin = new Elysia({ name: '@h/beginPlugin' })
       begin: performance.now(),
     };
   })
-  .as('plugin');
+  .as('global');

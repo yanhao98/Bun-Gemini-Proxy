@@ -7,7 +7,7 @@ import { beginPlugin } from './begin-plugin';
 
 export const auth = new Elysia({ name: '@h/auth' })
   .use(beginPlugin)
-  .use((await import('elysia-requestid')).requestID().as('plugin'))
+  .use((await import('elysia-requestid')).requestID().as('global'))
   // .use((await import('@elysiajs/bearer')).bearer())
   .onBeforeHandle((ctx) => {
     const authorization = ctx.request.headers.get('Authorization');
@@ -43,4 +43,4 @@ export const auth = new Elysia({ name: '@h/auth' })
       `✅ [认证] API密钥验证成功`,
     );
   })
-  .as('plugin');
+  .as('global');

@@ -10,5 +10,5 @@ export const errorHandler = () => {
     console.error(request);
   });
 
-  return app.as('plugin');
+  return app.as('global');
 };
