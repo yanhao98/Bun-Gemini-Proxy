@@ -27,13 +27,8 @@ function getCgroupMemoryUsage() {
   }
 }
 
-// 获取内存占用信息
-const mem = process.memoryUsage();
 // 格式化为 MB
 const formatMB = (n: number) => (n / 1024 / 1024).toFixed(2) + ' MB';
-
-// 获取cgroups内存使用量
-const cgroupMemoryUsage = getCgroupMemoryUsage();
 
 interface Props {
   pendingRequests: Server['pendingRequests'];
@@ -46,6 +41,11 @@ export function MainPage({
   keyUsageStats,
   keyCount,
 }: PropsWithChildren<Props>) {
+  // 获取内存占用信息
+  const mem = process.memoryUsage();
+  // 获取cgroups内存使用量
+  const cgroupMemoryUsage = getCgroupMemoryUsage();
+
   function handleClick() {
     window.location.reload();
   }
