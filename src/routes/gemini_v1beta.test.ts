@@ -99,7 +99,7 @@ describe('GoogleGenAI', () => {
 
   it('GoogleGenAI非流式', async () => {
     const response = await ai.models.generateContent({
-      model: 'gemini-2.5-pro-exp-03-25',
+      model: 'gemini-2.5-pro-preview-03-25', //  => gemini-2.5-pro-exp-03-25
       contents: '',
     });
     console.debug(`response.text :>> `, response.text);
