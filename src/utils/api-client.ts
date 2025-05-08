@@ -66,7 +66,7 @@ export async function handleGeminiApiRequest(ctx: RequestContextWithID) {
       if (errorData.error) {
         // 只保留 message 和 status，不保留 details
         return buildGeminiErrorResponse(
-          errorData.error.message || `目标服务器响应错误: ${resp.status}`,
+          `目标服务器响应错误: ${errorData.error.message || resp.status}`,
           resp.status,
           errorData.error.status || resp.statusText,
         );
