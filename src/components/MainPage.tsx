@@ -14,12 +14,39 @@ function getCgroupMemoryUsage() {
   }
 
   try {
-    // cgroups v2 路径
-    const memoryUsage = Number(
-      readFileSync('/sys/fs/cgroup/memory.current', 'utf8'),
-    );
-    // 返回原始字节数，不做格式化
-    return memoryUsage;
+    // 尝试读取不同路径的cgroup内存信息
+    const possiblePaths = [
+      // cgroups v2 路径
+      '/sys/fs/cgroup/memory.current',
+      // cgroups v1 路径
+      '/sys/fs/cgroup/memory/memory.usage_in_bytes',
+      // Docker中常见的cgroups v1路径
+      '/sys/fs/cgroup/memory.usage_in_bytes',
+      // 其他可能的路径
+      '/proc/self/cgroup',
+    ];
+
+    for (const path of possiblePaths) {
+      try {
+        const content = readFileSync(path, 'utf8');
+        // 对于memory.current和usage_in_bytes文件，内容直接是数字
+        if (path !== '/proc/self/cgroup') {
+          return Number(content.trim());
+        }
+        // 如果是/proc/self/cgroup，需要解析进一步获取内存信息
+        else {
+          // 在这种情况下，我们得到cgroup路径，但还需要额外的处理
+          // 这里只是返回一个标志值，表示检测到了cgroup但无法直接获取内存值
+          return -1;
+        }
+      } catch {
+        // 忽略单个文件的错误，继续尝试下一个
+        continue;
+      }
+    }
+
+    // 如果所有路径都失败
+    return null;
   } catch (error) {
     // 如果读取失败，忽略错误
     console.error('无法读取cgroup内存信息', error);
