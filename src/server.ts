@@ -8,7 +8,7 @@ const t1 = performance.now();
 consola.info(
   `🥳 进程启动耗时: ${process.uptime() * 1000} 毫秒 | 版本: ${
     process.env.VERSION
-  }`,
+  } | 平台: ${process.platform}`,
 );
 
 keyManager.loadApiKeys();

@@ -4,6 +4,36 @@ import prettyMs from 'pretty-ms';
 import type { PropsWithChildren } from '@kitajs/html';
 import { maskAPIKey } from '../utils';
 import { toIIFEString } from './utils';
+import { readFileSync } from 'fs';
+
+// 创建获取cgroup内存使用的函数
+function getCgroupMemoryUsage() {
+  // 只在Linux平台上尝试读取cgroup信息
+  if (process.platform !== 'linux') {
+    return null;
+  }
+
+  try {
+    // cgroups v2 路径
+    const memoryUsage = Number(
+      readFileSync('/sys/fs/cgroup/memory.current', 'utf8'),
+    );
+    // 返回原始字节数，不做格式化
+    return memoryUsage;
+  } catch (error) {
+    // 如果读取失败，忽略错误
+    console.error('无法读取cgroup内存信息', error);
+    return null;
+  }
+}
+
+// 获取内存占用信息
+const mem = process.memoryUsage();
+// 格式化为 MB
+const formatMB = (n: number) => (n / 1024 / 1024).toFixed(2) + ' MB';
+
+// 获取cgroups内存使用量
+const cgroupMemoryUsage = getCgroupMemoryUsage();
 
 interface Props {
   pendingRequests: Server['pendingRequests'];
@@ -24,10 +54,6 @@ export function MainPage({
     document.documentElement.classList.toggle('dark');
   }
 
-  // 获取内存占用信息
-  const mem = process.memoryUsage();
-  // 格式化为 MB
-  const formatMB = (n: number) => (n / 1024 / 1024).toFixed(2) + ' MB';
   return (
     <BaseLayout>
       <div class="max-w-2xl mx-auto p-6 bg-white dark:bg-gray-800 rounded-lg shadow-lg ">
@@ -94,6 +120,14 @@ export function MainPage({
                 <span class="text-gray-600 dark:text-gray-400">堆总量</span>
                 <span class="text-gray-800 dark:text-gray-200 font-mono">
                   {formatMB(mem.heapTotal)}
+                </span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="text-gray-600 dark:text-gray-400">
+                  容器实际内存
+                </span>
+                <span class="text-gray-800 dark:text-gray-200 font-mono">
+                  {cgroupMemoryUsage ? formatMB(cgroupMemoryUsage) : 'N/A'}
                 </span>
               </div>
             </div>
