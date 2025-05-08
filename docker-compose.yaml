@@ -12,11 +12,12 @@ services:
       REDIS_URL: redis://redis:6379/0
     depends_on:
       redis:
-        condition: service_healthy
+        condition: service_started
   redis:
     image: redis:latest
     healthcheck:
       test: ['CMD', 'redis-cli', 'ping']
       interval: 5s
-      timeout: 3s
+      timeout: 2s
       retries: 3
+      start_period: 5s
