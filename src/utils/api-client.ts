@@ -60,6 +60,25 @@ export async function handleGeminiApiRequest(ctx: RequestContextWithID) {
   );
 
   if (!resp.ok) {
+    try {
+      // 尝试解析上游返回的错误信息
+      const errorData = await resp.json();
+      if (errorData.error) {
+        // 只保留 message 和 status，不保留 details
+        return buildGeminiErrorResponse(
+          errorData.error.message || `目标服务器响应错误: ${resp.status}`,
+          resp.status,
+          errorData.error.status || resp.statusText,
+        );
+      }
+    } catch (e) {
+      // 解析失败时使用基本错误信息
+      log(
+        { requestID: ctx.requestID, begin: ctx.begin },
+        `[错误处理] 解析错误信息失败: ${e}`,
+      );
+    }
+
     return buildGeminiErrorResponse(
       `目标服务器响应错误: ${resp.status}`,
       resp.status,
@@ -163,8 +182,8 @@ function buildGeminiErrorResponse(
 ): Response {
   const errorJson = {
     error: {
+      message: errorMessage,
       code: errorCode,
-      message: `${errorMessage}`,
       status: errorStatus,
     },
   };
