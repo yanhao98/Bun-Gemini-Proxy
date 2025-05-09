@@ -25,6 +25,7 @@
     "ioredis": "^5.6.1",
     "pretty-ms": "^9.2.0",
     "redis": "^5.0.1",
+    "systeminformation": "4",
     "zod": "^3.24.4"
   },
   "devDependencies": {

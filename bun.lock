@@ -20,13 +20,14 @@
         "ioredis": "^5.6.1",
         "pretty-ms": "^9.2.0",
         "redis": "^5.0.1",
+        "systeminformation": "4",
         "zod": "^3.24.4",
       },
       "devDependencies": {
         "@google/genai": "^0.13.0",
         "@google/generative-ai": "^0.24.1",
         "bun-types": "^1.2.12",
-        "openai": "^4.97.0",
+        "openai": "^4.98.0",
       },
     },
   },
@@ -282,6 +283,8 @@
     "strtok3": ["strtok3@10.2.2", "", { "dependencies": { "@tokenizer/token": "^0.3.0", "peek-readable": "^7.0.0" } }, "sha512-Xt18+h4s7Z8xyZ0tmBoRmzxcop97R4BAh+dXouUDCYn+Em+1P3qpkUfI5ueWLT8ynC5hZ+q4iPEmGG1urvQGBg=="],
 
     "supports-color": ["supports-color@7.2.0", "", { "dependencies": { "has-flag": "^4.0.0" } }, "sha512-qpCAvRl9stuOHveKsn7HncJRvv501qIacKzQlO/+Lwxc9+0q2wLyv4Dfvt80/DPn2pqOBsJdDiogXGR9+OvwRw=="],
+
+    "systeminformation": ["systeminformation@4.34.23", "", { "os": [ "!aix", "!android", ], "bin": { "systeminformation": "lib/cli.js" } }, "sha512-33+lQwlLxXoxy0o9WLOgw8OjbXeS3Jv+pSl+nxKc2AOClBI28HsdRPpH0u9Xa9OVjHLT9vonnOMw1ug7YXI0dA=="],
 
     "token-types": ["token-types@6.0.0", "", { "dependencies": { "@tokenizer/token": "^0.3.0", "ieee754": "^1.2.1" } }, "sha512-lbDrTLVsHhOMljPscd0yitpozq7Ga2M5Cvez5AjGg8GASBjtt6iERCAJ93yommPmz62fb45oFIXHEZ3u9bfJEA=="],
 
