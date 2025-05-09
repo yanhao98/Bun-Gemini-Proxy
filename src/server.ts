@@ -6,7 +6,8 @@ import { app } from './server.app';
 import si from 'systeminformation';
 
 // 获取系统内存使用情况
-await si.mem()
+await si
+  .mem()
   .then((data) => {
     console.log('系统内存使用情况:');
     console.log(`总内存: ${(data.total / 1024 / 1024 / 1024).toFixed(2)} GB`);
@@ -14,7 +15,6 @@ await si.mem()
     console.log(`空闲内存: ${(data.free / 1024 / 1024 / 1024).toFixed(2)} GB`);
   })
   .catch((error) => console.error('获取系统内存信息失败:', error));
-
 
 const t1 = performance.now();
 
