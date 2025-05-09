@@ -22,10 +22,8 @@ export const auth = new Elysia({ name: '@h/auth' })
         { requestID: ctx.requestID, begin: ctx.begin },
         `⚠️ [认证] 未提供API密钥`,
       );
-      return ctx.error(
-        401,
-        createGeminiError(401, '未提供有效的API密钥，请检查请求头'),
-      );
+      ctx.set.status = 401;
+      return createGeminiError(401, '未提供有效的API密钥，请检查请求头');
     }
 
     if (authKey !== Bun.env.AUTH_KEY) {
@@ -33,10 +31,8 @@ export const auth = new Elysia({ name: '@h/auth' })
         { requestID: ctx.requestID, begin: ctx.begin },
         `❌ [认证] 提供的API密钥无效`,
       );
-      return ctx.error(
-        403,
-        createGeminiError(403, '提供的API密钥无效，请检查密钥是否正确'),
-      );
+      ctx.set.status = 403;
+      return createGeminiError(403, '提供的API密钥无效，请检查密钥是否正确');
     }
     log(
       { requestID: ctx.requestID, begin: ctx.begin },

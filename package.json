@@ -30,7 +30,7 @@
   "devDependencies": {
     "@google/genai": "^0.13.0",
     "@google/generative-ai": "^0.24.1",
-    "openai": "^4.97.0",
+    "openai": "^4.98.0",
     "bun-types": "^1.2.12"
   },
   "module": "src/index.js"
