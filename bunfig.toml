@@ -1,0 +1,2 @@
+[define]
+"process.env.VERSION" = "'VERSION_PLACEHOLDER'"

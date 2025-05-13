@@ -1,0 +1,178 @@
+name: 打包推送镜像
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+on:
+  workflow_dispatch:
+  push:
+
+env:
+  TZ: Asia/Shanghai
+
+jobs:
+  test:
+    name: 构建代码，代码检查和测试代码
+    runs-on: ubuntu-latest
+    services:
+      redis:
+        image: redis:latest
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping" --health-interval 10s --health-timeout 5s --health-retries 3
+
+    steps:
+      - name: 🐳 Redis 容器信息
+        run: |-
+          echo "job.services.redis.ports: ${{ job.services.redis.ports }}"
+          echo "job.services.redis.id: ${{ job.services.redis.id }}"
+
+      - name: 📥 检出代码
+        uses: actions/checkout@v4
+
+      - name: 🥟 设置 Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: canary
+
+      # Setup Node.js environment
+      - name: 📦 设置 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 'lts/*'
+
+      - name: 📚 安装依赖
+        run: bun install --frozen-lockfile
+
+      - name: 🔍 代码检查
+        run: bun run lint
+
+      - name: 🔎 类型检查
+        run: bun run typecheck
+
+      - name: 🧪 测试
+        run: bun test --coverage
+
+      - name: 🏗️ 构建代码
+        run: |
+          bun build \
+            --compile \
+            --minify-whitespace \
+            --minify-syntax \
+            --target bun \
+            --outfile ./build/server \
+            ./src/server.ts
+
+      - name: 📏 检查构建文件大小
+        run: |
+          echo "构建文件大小："
+          du -h ./build/server
+
+  build-and-push-ghcr:
+    needs: test
+    runs-on: ubuntu-latest
+    outputs:
+      imageid: ${{ steps.build-push.outputs.imageid }}
+    env:
+      # https://github.com/docker/metadata-action/tree/v5/?tab=readme-ov-file#semver
+      # Event: push,     Ref: refs/head/main,       Tags: main
+      # Event: push tag, Ref: refs/tags/v1.2.3,     Tags: 1.2.3, 1.2, 1, latest
+      # Event: push tag, Ref: refs/tags/v2.0.8-rc1, Tags: 2.0.8-rc1
+      metadata-action-tags: |
+        type=ref,event=branch
+        type=semver,pattern={{version}}
+        type=semver,pattern={{major}}.{{minor}}
+        type=semver,pattern={{major}}
+
+    steps:
+      - name: 📥 检出代码
+        uses: actions/checkout@main
+
+      - name: 🔢 设置版本变量
+        id: set-version
+        run: |
+          # 获取短 commit SHA
+          SHORT_SHA=$(git rev-parse --short HEAD)
+
+          if [[ $GITHUB_REF == refs/tags/* ]]; then
+            # 从引用中提取标签版本号（例如：refs/tags/v1.2.3 -> 1.2.3）
+            VERSION=${GITHUB_REF#refs/tags/}
+            VERSION=${VERSION#v}
+            # 添加 commit SHA
+            VERSION="${VERSION}-${SHORT_SHA}"
+          else
+            # 如果不是标签，使用分支名称（例如：refs/heads/main -> main）
+            VERSION=${GITHUB_REF#refs/heads/}
+            # 添加 commit SHA
+            VERSION="${VERSION}-${SHORT_SHA}"
+          fi
+          # 替换版本中的 / 字符，避免 sed 冲突
+          VERSION=${VERSION//\//-}
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "设置版本: $VERSION"
+
+      - name: 🔄 替换 bunfig.toml 中的版本占位符
+        run: |
+          # 使用 sed 命令替换 VERSION_PLACEHOLDER
+          sed -i 's/VERSION_PLACEHOLDER/${{ env.VERSION }}/g' bunfig.toml
+          echo "替换后的版本信息:"
+          grep "process.env.VERSION" bunfig.toml
+
+      - name: 🔑 登录 GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🐳 构建并推送 Docker 镜像
+        id: build-push
+        uses: yanhao98/composite-actions/docker-build-push@main
+        with:
+          file: ./Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: true
+          load: false
+          meta_images: ghcr.io/${{ github.repository }}
+          meta_tags: ${{ env.metadata-action-tags }}
+          cache-from: type=gha,scope=${{ github.workflow }}
+          cache-to: type=gha,scope=${{ github.workflow }}
+
+  # https://huggingface.co/docs/hub/spaces-github-actions
+  update-huggingface:
+    needs: build-and-push-ghcr
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Lowercase Repository Name
+        id: lowercase-repo-name
+        run: |
+          echo "IMAGE_NAME=$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
+
+      - name: Push to hub
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          HF_USERNAME: ${{ vars.HF_USERNAME }}
+          HF_SPACENAME: ${{ vars.HF_SPACENAME }}
+        run: |
+          cat <<EOF > Dockerfile
+          FROM ghcr.io/${{ steps.lowercase-repo-name.outputs.IMAGE_NAME }}:main@${{ needs.build-and-push-ghcr.outputs.imageid }}
+          EOF
+
+          cat <<EOF > README.md
+          ---
+          sdk: docker
+          ---
+          EOF
+
+          git config --global user.name "GitHub Action"
+          git config --global user.email "action@github.com"
+          git config --global init.defaultBranch main
+          git init
+          git add .
+
+          set -x
+          git commit -m "$(date '+%Y-%m-%d %H:%M:%S')"
+          git push --force https://$HF_USERNAME:$HF_TOKEN@huggingface.co/spaces/$HF_USERNAME/$HF_SPACENAME main
