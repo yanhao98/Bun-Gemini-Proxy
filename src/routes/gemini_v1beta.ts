@@ -36,7 +36,9 @@ export const gemini_v1betaRoutes = new Elysia({ prefix: '/v1beta' })
             models: modelsDataSchema
               .parse(await response.clone().json())
               .models.filter(
-                (model) => !model.description?.includes('deprecated'),
+                (model) =>
+                  !model.description?.includes('deprecated') &&
+                  !model.name.includes('1.5'),
               ),
           };
         }

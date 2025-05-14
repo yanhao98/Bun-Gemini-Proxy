@@ -92,7 +92,9 @@ describe('GoogleGenAI', () => {
   it('GoogleGenAI列出模型', async () => {
     const models = await ai.models.list();
     for (const model of models.page) {
+      // console.debug(`model :>> `, model.name);
       expect(JSON.stringify(model)).not.toContain('deprecated');
+      expect(JSON.stringify(model)).not.toContain('1.5');
     }
     expect(models.pageSize).toBeGreaterThan(0);
   });
