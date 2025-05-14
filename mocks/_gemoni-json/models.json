@@ -327,6 +327,40 @@
       "maxTemperature": 2
     },
     {
+      "name": "models/gemini-2.5-flash-preview-04-17-thinking",
+      "version": "2.5-preview-04-17",
+      "displayName": "Gemini 2.5 Flash Preview 04-17 for cursor testing",
+      "description": "Preview release (April 17th, 2025) of Gemini 2.5 Flash",
+      "inputTokenLimit": 1048576,
+      "outputTokenLimit": 65536,
+      "supportedGenerationMethods": [
+        "generateContent",
+        "countTokens",
+        "createCachedContent"
+      ],
+      "temperature": 1,
+      "topP": 0.95,
+      "topK": 64,
+      "maxTemperature": 2
+    },
+    {
+      "name": "models/gemini-2.5-pro-preview-05-06",
+      "version": "2.5-preview-05-06",
+      "displayName": "Gemini 2.5 Pro Preview 05-06",
+      "description": "Preview release (May 6th, 2025) of Gemini 2.5 Pro",
+      "inputTokenLimit": 1048576,
+      "outputTokenLimit": 65536,
+      "supportedGenerationMethods": [
+        "generateContent",
+        "countTokens",
+        "createCachedContent"
+      ],
+      "temperature": 1,
+      "topP": 0.95,
+      "topK": 64,
+      "maxTemperature": 2
+    },
+    {
       "name": "models/gemini-2.0-flash-exp",
       "version": "2.0",
       "displayName": "Gemini 2.0 Flash Experimental",
@@ -426,6 +460,19 @@
       "temperature": 1,
       "topP": 0.95,
       "topK": 40,
+      "maxTemperature": 2
+    },
+    {
+      "name": "models/gemini-2.0-flash-preview-image-generation",
+      "version": "2.0",
+      "displayName": "Gemini 2.0 Flash Preview Image Generation",
+      "description": "Gemini 2.0 Flash Preview Image Generation",
+      "inputTokenLimit": 32768,
+      "outputTokenLimit": 8192,
+      "supportedGenerationMethods": ["generateContent", "countTokens"],
+      "temperature": 1,
+      "topP": 0.95,
+      "topK": 64,
       "maxTemperature": 2
     },
     {
@@ -704,5 +751,6 @@
       "topK": 64,
       "maxTemperature": 2
     }
-  ]
+  ],
+  "nextPageToken": "Cgptb2RlbHMvYXFh"
 }
