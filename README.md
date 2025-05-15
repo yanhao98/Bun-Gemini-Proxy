@@ -106,7 +106,7 @@ MIT
 
 ## 资料
 
-- https://ai.google.dev/gemini-api/docs/rate-limits?hl=zh-cn
+- https://ai.google.dev/gemini-api/docs?hl=zh-cn
 - https://github.com/google-gemini/generative-ai-js
 - https://github.com/googleapis/js-genai
 - https://github.com/PublicAffairs/openai-gemini
