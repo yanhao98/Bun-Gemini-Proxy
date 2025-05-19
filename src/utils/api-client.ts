@@ -26,8 +26,14 @@ export async function handleGeminiApiRequest(ctx: RequestContextWithID) {
     );
   });
 
+  // 提取认证密钥
+  const authKey = extractAuthKey({
+    query: ctx.query,
+    headers: ctx.request.headers,
+  });
+
   // 获取API密钥
-  const xGoogApiKey = keyManager.getNextApiKey();
+  const xGoogApiKey = keyManager.getNextApiKey(authKey);
   log(
     { requestID: ctx.requestID, begin: ctx.begin },
     `[密钥分配] API密钥已分配: ${maskAPIKey(xGoogApiKey)}`,
@@ -253,4 +259,18 @@ function buildGeminiErrorResponse(
       'Content-Type': 'application/json',
     },
   });
+}
+
+/**
+ * 从请求中提取认证密钥
+ * 支持多种认证方式：请求头、查询参数、Bearer认证
+ */
+function extractAuthKey({ query, headers }: AuthRequestCtx): string | null {
+  const authorization = headers.get('Authorization');
+
+  return (
+    headers.get(GEMINI_API_HEADER_NAME) ??
+    new URLSearchParams(query).get('key') ??
+    (authorization?.startsWith('Bearer ') ? authorization?.slice(7) : null)
+  );
 }

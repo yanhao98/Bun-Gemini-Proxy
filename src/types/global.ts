@@ -5,5 +5,7 @@ declare module 'bun' {
     REDIS_URL?: string;
     AUTH_KEY?: string;
     LOG_DIR?: string;
+    AUTH_KEY1?: string;
+    AUTH_KEY2?: string;
   }
 }

@@ -52,7 +52,11 @@ export class KeyManager {
    * 使用次数较少的密钥有更高的概率被选中
    * @throws {Error} 如果没有可用的API密钥
    */
-  public getNextApiKey(): string {
+  public getNextApiKey(authKey?: string): string {
+    if (authKey) {
+      return this.getApiKeyByAuthKey(authKey);
+    }
+
     if (this.apiKeys.length === 0) {
       throw new Error(
         '没有可用的 API 密钥，请确保已调用 loadApiKeys() 方法并正确配置 GEMINI_API_KEYS 环境变量',
@@ -127,5 +131,18 @@ export class KeyManager {
    */
   protected getKeyUsageCount(key: string): number {
     return this.keyUsageCount.get(key) || 0;
+  }
+
+  /**
+   * 根据提供的authKey获取API密钥
+   */
+  public getApiKeyByAuthKey(authKey: string): string {
+    if (authKey === Bun.env.AUTH_KEY1) {
+      return this.getNextApiKey();
+    } else if (authKey === Bun.env.AUTH_KEY2) {
+      return this.apiKeys[0]; // 假设AUTH_KEY2对应的API密钥是第一个
+    } else {
+      throw new Error('无效的authKey');
+    }
   }
 }

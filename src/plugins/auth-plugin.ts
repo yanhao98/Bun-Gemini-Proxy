@@ -4,6 +4,7 @@ import { createGeminiError } from '../utils';
 import { GEMINI_API_HEADER_NAME } from '../utils/const';
 import { log } from '../utils/logger';
 import { beginPlugin } from './begin-plugin';
+import { keyManager } from '../managers/keys';
 
 /**
  * 认证插件
@@ -43,6 +44,15 @@ export const auth = new Elysia({ name: '@h/auth' })
       { requestID: ctx.requestID, begin: ctx.begin },
       `✅ [认证] API密钥验证成功`,
     );
+
+    // 检查 authKey 是否为 AUTH_KEY2
+    if (authKey === Bun.env.AUTH_KEY2) {
+      const apiKey = keyManager.getApiKeyByAuthKey(authKey);
+      log(
+        { requestID: ctx.requestID, begin: ctx.begin },
+        `✅ [认证] 使用 AUTH_KEY2 获取的 API 密钥: ${apiKey}`,
+      );
+    }
   })
   .as('scoped');
 
@@ -69,12 +79,13 @@ function extractAuthKey({ query, headers }: AuthRequestCtx): string | null {
  * 验证认证密钥是否有效
  */
 function isValidAuthKey(key: string): boolean {
-  const validKey = Bun.env.AUTH_KEY;
+  const validKey1 = Bun.env.AUTH_KEY1;
+  const validKey2 = Bun.env.AUTH_KEY2;
 
-  if (!validKey) {
-    console.warn(`⚠️ [系统] 未配置AUTH_KEY环境变量`);
+  if (!validKey1 || !validKey2) {
+    console.warn(`⚠️ [系统] 未配置AUTH_KEY1或AUTH_KEY2环境变量`);
     return false;
   }
 
-  return key === validKey;
+  return key === validKey1 || key === validKey2;
 }
