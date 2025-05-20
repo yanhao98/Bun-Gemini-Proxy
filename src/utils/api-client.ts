@@ -1,15 +1,18 @@
 import type { Context, SingletonBase } from 'elysia';
 import { keyManager } from '../managers/keys';
-import { GEMINI_API_HEADER_NAME, MODEL_NAME_MAPPINGS } from './const';
+import {
+  GEMINI_API_HEADER_NAME,
+  MODEL_NAME_MAPPINGS,
+  PAID_MODELS_CONFIG,
+} from './const';
 import { maskAPIKey } from './index';
 import { log, type LogCtx } from './logger';
+import { extractAuthKey } from '../plugins/auth-plugin';
 
 type RequestContextWithID = Context<
   {},
   { derive: { requestID: string | number; begin: number } } & SingletonBase
 >;
-
-
 
 /**
  * 向 Gemini API 发送请求的通用客户端
@@ -24,11 +27,57 @@ export async function handleGeminiApiRequest(ctx: RequestContextWithID) {
   });
 
   // 获取API密钥
-  const xGoogApiKey = keyManager.getNextApiKey();
-  log(
-    { requestID: ctx.requestID, begin: ctx.begin },
-    `[密钥分配] API密钥已分配: ${maskAPIKey(xGoogApiKey)}`,
-  );
+  let xGoogApiKey = '';
+
+  // 从URL中提取模型名称
+  const params = ctx.params as Record<string, string | undefined> | undefined;
+  const modelAndMethod = params?.modelAndMethod;
+  const modelName = modelAndMethod?.split(':')[0];
+
+  // >>>>> TODO: 提取这里的逻辑。
+  // 检查是否是付费模型
+  if (modelName && modelName in PAID_MODELS_CONFIG) {
+    // TODO: .derive() authKey?
+    const authKey = extractAuthKey({
+      query: ctx.query,
+      headers: ctx.request.headers,
+    })!;
+
+    const paidModelConfig =
+      PAID_MODELS_CONFIG[modelName as keyof typeof PAID_MODELS_CONFIG];
+
+    if (authKey in paidModelConfig.AUTH_KEY_MAP) {
+      // 使用付费模型对应的API密钥
+      xGoogApiKey =
+        paidModelConfig.AUTH_KEY_MAP[
+          authKey as keyof typeof paidModelConfig.AUTH_KEY_MAP
+        ];
+      log(
+        { requestID: ctx.requestID, begin: ctx.begin },
+        `[付费模型] 使用模型 ${modelName} 的专用API密钥: ${maskAPIKey(
+          xGoogApiKey,
+        )}`,
+      );
+    } else {
+      // 如果找不到对应的API密钥，返回错误
+      log(
+        { requestID: ctx.requestID, begin: ctx.begin },
+        `[付费模型错误] 无效的认证密钥或未找到对应的API密钥`,
+      );
+      return buildGeminiErrorResponse(
+        `无效的认证密钥或未找到对应的API密钥`,
+        401,
+      );
+    }
+  } else {
+    // 使用轮询方式获取API密钥
+    xGoogApiKey = keyManager.getNextApiKey();
+    log(
+      { requestID: ctx.requestID, begin: ctx.begin },
+      `[密钥分配] API密钥已分配: ${maskAPIKey(xGoogApiKey)}`,
+    );
+  }
+  // <<<<<
 
   // 构建目标URL
   let targetUrl = buildRequestUrl(ctx);

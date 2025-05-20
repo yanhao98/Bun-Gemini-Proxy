@@ -30,14 +30,14 @@ export function log(ctx: LogCtx, ...messages: string[]): void {
   )}\n`;
   console.log(logMessage.trim());
 
-  // >> 将日志写入文件
-  const logFileName = `${dayjs().format('HHmmss')}-${requestID}.log`;
-  const logFile = path.join(LOG_DIR, logFileName);
-  try {
-    appendFileSync(logFile, logMessage);
-    console.log(`日志已写入 ${logFile}`);
-  } catch (error) {
-    console.error(`写入日志到 ${logFile} 失败:`, error);
-  }
-  // <<<
+  // // >> 将日志写入文件
+  // const logFileName = `${dayjs().format('HHmmss')}-${requestID}.log`;
+  // const logFile = path.join(LOG_DIR, logFileName);
+  // try {
+  //   appendFileSync(logFile, logMessage);
+  //   console.log(`日志已写入 ${logFile}`);
+  // } catch (error) {
+  //   console.error(`写入日志到 ${logFile} 失败:`, error);
+  // }
+  // // <<<
 }

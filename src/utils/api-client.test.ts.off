@@ -1,0 +1,162 @@
+import {
+  describe,
+  expect,
+  it,
+  mock,
+  beforeAll,
+  afterAll,
+  beforeEach,
+} from 'bun:test';
+import { handleGeminiApiRequest } from './api-client';
+import { keyManager } from '../managers/keys';
+import { PAID_MODELS_CONFIG } from './const';
+
+// 模拟请求上下文
+const createMockContext = (options: {
+  url: string;
+  method?: string;
+  headers?: Record<string, string>;
+  body?: any;
+  signal?: AbortSignal;
+}) => {
+  const url = new URL(options.url);
+  return {
+    request: {
+      url: options.url,
+      method: options.method || 'POST',
+      headers: new Headers(options.headers || {}),
+      body: options.body,
+      signal: options.signal || { addEventListener: () => {} },
+    },
+    query: Object.fromEntries(url.searchParams.entries()),
+    requestID: 'test-request-id',
+    begin: Date.now(),
+  };
+};
+
+// 模拟响应
+const createMockResponse = (options: {
+  ok: boolean;
+  status: number;
+  headers?: Record<string, string>;
+  body?: any;
+}) => {
+  return {
+    ok: options.ok,
+    status: options.status,
+    headers: new Headers(options.headers || {}),
+    body: options.body,
+    clone: () => createMockResponse(options),
+    text: () => Promise.resolve(''),
+    json: () => Promise.resolve({}),
+  };
+};
+
+describe('API客户端测试', () => {
+  // 保存原始fetch
+  const originalFetch = globalThis.fetch;
+  let mockFetch: any;
+  let mockGetNextApiKey: any;
+
+  beforeAll(() => {
+    // 创建模拟fetch函数
+    mockFetch = mock(() =>
+      Promise.resolve(
+        createMockResponse({
+          ok: true,
+          status: 200,
+          headers: { 'content-type': 'application/json' },
+        }) as unknown as Response,
+      ),
+    );
+
+    // 替换全局fetch
+    // @ts-ignore - 忽略类型错误
+    globalThis.fetch = mockFetch;
+
+    // 模拟keyManager
+    mockGetNextApiKey = mock(() => 'free-model-api-key');
+    keyManager.getNextApiKey = mockGetNextApiKey;
+  });
+
+  afterAll(() => {
+    // 恢复原始fetch
+    globalThis.fetch = originalFetch;
+  });
+
+  beforeEach(() => {
+    // 重置模拟函数
+    mockFetch.mockClear();
+    mockGetNextApiKey.mockClear();
+  });
+
+  it('应该为付费模型使用特定的API密钥', async () => {
+    // 获取第一个付费模型名称和对应的认证密钥
+    const paidModelName = Object.keys(PAID_MODELS_CONFIG)[0];
+    const modelConfig =
+      PAID_MODELS_CONFIG[paidModelName as keyof typeof PAID_MODELS_CONFIG];
+    const authKey = Object.keys(modelConfig.AUTH_KEY_MAP)[0];
+    const expectedApiKey =
+      modelConfig.AUTH_KEY_MAP[
+        authKey as keyof typeof modelConfig.AUTH_KEY_MAP
+      ];
+
+    // 创建模拟上下文
+    const ctx = createMockContext({
+      url: `https://api.example.com/v1/models/${paidModelName}/generate`,
+      headers: {
+        authorization: `Bearer ${authKey}`,
+      },
+      body: JSON.stringify({ prompt: '测试付费模型' }),
+    });
+
+    // 调用处理函数
+    await handleGeminiApiRequest(ctx as any);
+
+    // 验证fetch调用
+    expect(mockFetch).toHaveBeenCalled();
+    const fetchCall = mockFetch.mock.calls[0];
+    expect(fetchCall[1].headers.get('x-goog-api-key')).toBe(expectedApiKey);
+    // 确保没有调用轮询方法
+    expect(mockGetNextApiKey).not.toHaveBeenCalled();
+  });
+
+  it('应该为非付费模型使用轮询的API密钥', async () => {
+    // 创建模拟上下文
+    const ctx = createMockContext({
+      url: 'https://api.example.com/v1/models/gemini-pro/generate',
+      body: JSON.stringify({ prompt: '测试免费模型' }),
+    });
+
+    // 调用处理函数
+    await handleGeminiApiRequest(ctx as any);
+
+    // 验证fetch调用
+    expect(mockFetch).toHaveBeenCalled();
+    const fetchCall = mockFetch.mock.calls[0];
+    expect(fetchCall[1].headers.get('x-goog-api-key')).toBe(
+      'free-model-api-key',
+    );
+    expect(mockGetNextApiKey).toHaveBeenCalled();
+  });
+
+  it('应该在付费模型请求中缺少认证密钥时返回401错误', async () => {
+    // 获取第一个付费模型名称
+    const paidModelName = Object.keys(PAID_MODELS_CONFIG)[0];
+
+    // 创建模拟上下文（没有认证头）
+    const ctx = createMockContext({
+      url: `https://api.example.com/v1/models/${paidModelName}/generate`,
+      body: JSON.stringify({ prompt: '测试付费模型无认证' }),
+    });
+
+    // 调用处理函数
+    const response = await handleGeminiApiRequest(ctx as any);
+
+    // 验证响应
+    expect(response.status).toBe(401);
+    const responseBody = await response.json();
+    expect(responseBody.error).toBeDefined();
+    expect(responseBody.error.message).toContain('无效的认证密钥');
+  });
+});

@@ -55,7 +55,10 @@ interface AuthRequestCtx {
  * 从请求中提取认证密钥
  * 支持多种认证方式：请求头、查询参数、Bearer认证
  */
-function extractAuthKey({ query, headers }: AuthRequestCtx): string | null {
+export function extractAuthKey({
+  query,
+  headers,
+}: AuthRequestCtx): string | null {
   const authorization = headers.get('Authorization');
 
   return (
