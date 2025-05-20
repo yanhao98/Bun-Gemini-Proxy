@@ -1,6 +1,6 @@
 import type { Context, SingletonBase } from 'elysia';
 import { keyManager } from '../managers/keys';
-import { GEMINI_API_HEADER_NAME } from './const';
+import { GEMINI_API_HEADER_NAME, MODEL_NAME_MAPPINGS } from './const';
 import { maskAPIKey } from './index';
 import { log, type LogCtx } from './logger';
 
@@ -9,10 +9,7 @@ type RequestContextWithID = Context<
   { derive: { requestID: string | number; begin: number } } & SingletonBase
 >;
 
-// 模型名称映射表
-const MODEL_NAME_MAPPINGS: Record<string, string> = {
-  'gemini-2.5-pro-preview-03-25': 'gemini-2.5-pro-exp-03-25',
-};
+
 
 /**
  * 向 Gemini API 发送请求的通用客户端
