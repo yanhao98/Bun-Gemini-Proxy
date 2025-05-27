@@ -2,15 +2,17 @@ import { GoogleGenAI } from '@google/genai';
 import { afterEach, beforeAll, describe, expect, it } from 'bun:test';
 import { consola, LogLevels } from 'consola';
 import OpenAI from 'openai';
-import { mockServerConfig_port_6666 } from '../../mocks/gemini_v1beta.MockServerConfig_6666';
+
 import { keyManager } from '../managers/keys';
 import { gemini_v1betaRoutes } from './gemini_v1beta';
+import { startMockServer } from '../../mocks/gemini_v1beta.MockServer';
 consola.level = LogLevels.verbose;
 
-Bun.serve(mockServerConfig_port_6666);
+let mockServerPort: number;
 
 beforeAll(async () => {
-  Bun.env.GEMINI_BASE_URL = 'http://localhost:6666';
+  mockServerPort = await startMockServer();
+  Bun.env.GEMINI_BASE_URL = `http://localhost:${mockServerPort}`;
   Bun.env.AUTH_KEY = 'test-auth-key';
   Bun.env.GEMINI_API_KEYS = 'test-api-key-1,test-api-key-2,';
   keyManager.loadApiKeys();
