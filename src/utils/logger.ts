@@ -1,11 +1,5 @@
 import dayjs from 'dayjs';
-import { appendFileSync, mkdirSync } from 'node:fs';
-import path from 'node:path';
 import prettyMs from 'pretty-ms';
-
-export const LOG_DIR = Bun.env.LOG_DIR || path.join(process.cwd(), 'logs');
-// 创建日志目录
-mkdirSync(LOG_DIR, { recursive: true });
 
 // 定义日志上下文类型
 export interface LogCtx {
@@ -29,15 +23,4 @@ export function log(ctx: LogCtx, ...messages: string[]): void {
     ' ',
   )}\n`;
   console.log(logMessage.trim());
-
-  // >> 将日志写入文件
-  const logFileName = `${dayjs().format('HHmmss')}-${requestID}.log`;
-  const logFile = path.join(LOG_DIR, logFileName);
-  try {
-    appendFileSync(logFile, logMessage);
-    console.log(`日志已写入 ${logFile}`);
-  } catch (error) {
-    console.error(`写入日志到 ${logFile} 失败:`, error);
-  }
-  // <<<
 }

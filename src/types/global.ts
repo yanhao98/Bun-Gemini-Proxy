@@ -4,6 +4,6 @@ declare module 'bun' {
     GEMINI_API_KEYS?: string;
     REDIS_URL?: string;
     AUTH_KEY?: string;
-    LOG_DIR?: string;
+    // LOG_DIR?: string;
   }
 }

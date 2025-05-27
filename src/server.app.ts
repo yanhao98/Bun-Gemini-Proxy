@@ -1,14 +1,12 @@
 import cors from '@elysiajs/cors';
 import { html } from '@elysiajs/html';
 import { serverTiming } from '@elysiajs/server-timing';
-import { staticPlugin } from '@elysiajs/static';
 import { swagger } from '@elysiajs/swagger';
 import Elysia from 'elysia';
 import { requestID } from 'elysia-requestid';
 import { errorHandler } from './plugins/error-handler';
 import { mainRoutes } from './routes/_main';
 import { gemini_v1betaRoutes } from './routes/gemini_v1beta';
-import { LOG_DIR } from './utils/logger';
 
 // 创建基础应用实例
 export const app = new Elysia()
@@ -36,12 +34,12 @@ export const app = new Elysia()
   .use(serverTiming({ enabled: true }))
 
   // 路由
-  .use(
+  /* .use(
     staticPlugin({
       prefix: '/logs',
       assets: LOG_DIR,
       alwaysStatic: false,
     }),
-  )
+  ) */
   .use(mainRoutes)
   .use(gemini_v1betaRoutes);

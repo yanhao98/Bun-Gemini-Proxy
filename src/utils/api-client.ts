@@ -9,8 +9,6 @@ type RequestContextWithID = Context<
   { derive: { requestID: string | number; begin: number } } & SingletonBase
 >;
 
-
-
 /**
  * 向 Gemini API 发送请求的通用客户端
  */

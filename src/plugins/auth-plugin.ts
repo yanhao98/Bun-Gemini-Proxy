@@ -46,7 +46,7 @@ export const auth = new Elysia({ name: '@h/auth' })
   })
   .as('scoped');
 
-interface AuthRequestCtx {
+export interface AuthRequestCtx {
   query: Record<string, string>;
   headers: Headers;
 }
@@ -55,13 +55,16 @@ interface AuthRequestCtx {
  * 从请求中提取认证密钥
  * 支持多种认证方式：请求头、查询参数、Bearer认证
  */
-function extractAuthKey({ query, headers }: AuthRequestCtx): string | null {
+export function extractAuthKey({
+  query,
+  headers,
+}: AuthRequestCtx): string | undefined {
   const authorization = headers.get('Authorization');
 
   return (
     headers.get(GEMINI_API_HEADER_NAME) ??
     new URLSearchParams(query).get('key') ??
-    (authorization?.startsWith('Bearer ') ? authorization?.slice(7) : null)
+    (authorization?.startsWith('Bearer ') ? authorization?.slice(7) : undefined)
   );
 }
 
