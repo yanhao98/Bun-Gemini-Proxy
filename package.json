@@ -34,7 +34,7 @@
     "@google/generative-ai": "^0.24.1",
     "bun-types": "^1.2.14",
     "chalk": "^5.4.1",
-    "openai": "^4.103.0"
+    "openai": "^5.8.2"
   },
   "module": "src/index.js"
 }
