@@ -30,7 +30,7 @@ jobs:
           echo "job.services.redis.id: ${{ job.services.redis.id }}"
 
       - name: 📥 检出代码
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: 🥟 设置 Bun
         uses: oven-sh/setup-bun@v2
@@ -39,7 +39,7 @@ jobs:
 
       # Setup Node.js environment
       - name: 📦 设置 Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: 'lts/*'
 
